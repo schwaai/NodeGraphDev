@@ -277,6 +277,8 @@ def xformers_enabled():
         return False
     if directml_enabled:
         return False
+    if torch.cuda.get_device_properties("cuda").name == "AMD":
+        return False
     return XFORMERS_IS_AVAILBLE
 
 
@@ -368,6 +370,9 @@ def should_use_fp16():
 
     props = torch.cuda.get_device_properties("cuda")
     if props.major < 7:
+        return False
+    
+    if "AMD" in props.name:
         return False
 
     if "AMD" in props.name:
