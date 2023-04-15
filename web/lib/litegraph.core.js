@@ -6134,6 +6134,9 @@ LGraphNode.prototype.executeAction = function(action)
             }
             
         } else if (e.which == 2) {
+            this.dragging_canvas = true; // HOGE
+            LiteGraph.middle_click_slot_add_default_node = false; // HOGE
+
             //middle button
         	
 			if (LiteGraph.middle_click_slot_add_default_node){
