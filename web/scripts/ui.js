@@ -411,14 +411,18 @@ class ComfyList {
 
 	async show() {
 		this.element.style.display = "block";
-		this.button.textContent = "Close";
+                if (this.button) {
+			this.button.textContent = "Close";
+                }
 
 		await this.load();
 	}
 
 	hide() {
 		this.element.style.display = "none";
-		this.button.textContent = "See " + this.#text;
+		if (this.button) {
+			this.button.textContent = "See " + this.#text;
+		}
 	}
 
 	toggle() {
@@ -575,6 +579,7 @@ export class ComfyUI {
                                         };
                                         list[name] = new_item;
                                         save_saved(list);
+                                        this.saved.update();
                                 },
                         }),
 			$el("button", {
@@ -620,6 +625,7 @@ export class ComfyUI {
 			}}),
 		]);
                 this.saved.show();
+                this.saved.update();
 
 		dragElement(this.menuContainer, this.settings);
 
