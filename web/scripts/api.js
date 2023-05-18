@@ -1,16 +1,3 @@
-export function load_saved() {
-	try {
-		let rv = JSON.parse(localStorage.getItem("saved") || "{}");
-		return rv;
-	} catch (error) {
-		return {};
-	}
-}
-
-export function save_saved(list) {
-	localStorage.setItem('saved', JSON.stringify(list));
-}
-
 class ComfyApi extends EventTarget {
 	#registered = new Set();
 
@@ -48,7 +35,7 @@ class ComfyApi extends EventTarget {
 		}
 
 		let opened = false;
-		let existingSession = window.name;
+		let existingSession = sessionStorage["Comfy.SessionId"] || "";
 		if (existingSession) {
 			existingSession = "?clientId=" + existingSession;
 		}
@@ -88,7 +75,7 @@ class ComfyApi extends EventTarget {
 					case "status":
 						if (msg.data.sid) {
 							this.clientId = msg.data.sid;
-							window.name = this.clientId;
+							sessionStorage["Comfy.SessionId"] = this.clientId;
 						}
 						this.dispatchEvent(new CustomEvent("status", { detail: msg.data.status }));
 						break;
@@ -176,7 +163,7 @@ class ComfyApi extends EventTarget {
 
 		if (res.status !== 200) {
 			throw {
-				response: await res.json(),
+				response: await res.text(),
 			};
 		}
 	}
@@ -187,14 +174,10 @@ class ComfyApi extends EventTarget {
 	 * @returns The items of the specified type grouped by their status
 	 */
 	async getItems(type) {
-		switch (type) {
-		case "queue":
+		if (type === "queue") {
 			return this.getQueue();
-		case "history":
-			return this.getHistory();
-		case "saved":
-			return this.getSaved();
 		}
+		return this.getHistory();
 	}
 
 	/**
@@ -230,37 +213,6 @@ class ComfyApi extends EventTarget {
 		} catch (error) {
 			console.error(error);
 			return { History: [] };
-		}
-	}
-
-	/**
-	 * Gets prompts saved by the user
-	 * @returns Saved prompts with outputs
-	 */
-	async getSaved() {
-		// note that this could, and maybe should, be persisted
-		// server-side; however, the server doesn't have any persistence
-		// yet, so rather than add a dependency on sqlite or whatever
-		// I'll just use client storage for now
-		try {
-			const r = load_saved();
-			return { Saved: Object.values(r).map((i) => {
-				i['remove'] = {
-                                        name: "Delete",
-                                        cb: () => {
-                                                let name = i.prompt[0];
-						let list = load_saved();
-						if (list.hasOwnProperty(name)) {
-							delete list[name];
-						}
-						save_saved(list);
-                                        },
-                                };
-				return i;
-			})};
-		} catch (error) {
-			console.error(error);
-			return { Saved: [] };
 		}
 	}
 
