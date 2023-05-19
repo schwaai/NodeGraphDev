@@ -160,7 +160,7 @@ class ExecServer():
                 
             return web.Response(status=404)
 
-        @routes.get("/prompt")
+        @routes.get("/exec")
         async def get_prompt(request):
             return web.json_response(self.get_queue_info())
 
@@ -194,7 +194,7 @@ class ExecServer():
             queue_info['queue_pending'] = current_queue[1]
             return web.json_response(queue_info)
 
-        @routes.post("/prompt")
+        @routes.post("/exec")
         async def post_prompt(request):
             print("got prompt")
             resp_code = 200

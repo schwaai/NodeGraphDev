@@ -448,7 +448,7 @@ export class ComfyUI {
 				$el("button.comfy-settings-btn", { textContent: "⚙️", onclick: () => this.settings.show() }),
 			]),
 			$el("button.comfy-queue-btn", {
-				textContent: "Queue Prompt",
+				textContent: "Queue",
 				onclick: () => app.queuePrompt(0, this.batchCount),
 			}),
 			$el("div", {}, [
@@ -491,7 +491,7 @@ export class ComfyUI {
 						id: "autoQueueCheckbox",
 						type: "checkbox",
 						checked: false,
-						title: "automatically queue prompt when the queue size hits 0",
+						title: "automatically queue exec when the queue size hits 0",
 					}),
 				]),
 			]),

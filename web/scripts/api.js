@@ -1,4 +1,4 @@
-class ComfyApi extends EventTarget {
+class ExecUI extends EventTarget {
 	#registered = new Set();
 
 	constructor() {
@@ -16,7 +16,7 @@ class ComfyApi extends EventTarget {
 	#pollQueue() {
 		setInterval(async () => {
 			try {
-				const resp = await fetch("/prompt");
+				const resp = await fetch("/exec");
 				const status = await resp.json();
 				this.dispatchEvent(new CustomEvent("status", { detail: status }));
 			} catch (error) {
@@ -140,7 +140,7 @@ class ComfyApi extends EventTarget {
 	 * @param {number} number The index at which to queue the prompt, passing -1 will insert the prompt at the front of the queue
 	 * @param {object} prompt The prompt data to queue
 	 */
-	async queuePrompt(number, { output, workflow }) {
+	async queueExec(number, { output, workflow }) {
 		const body = {
 			client_id: this.clientId,
 			prompt: output,
@@ -260,4 +260,4 @@ class ComfyApi extends EventTarget {
 	}
 }
 
-export const api = new ComfyApi();
+export const api = new ExecUI();

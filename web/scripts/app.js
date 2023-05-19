@@ -714,7 +714,7 @@ export class ComfyApp {
 		window.addEventListener("keydown", (e) => {
 			this.shiftDown = e.shiftKey;
 
-			// Queue prompt using ctrl or command + enter
+			// Queue exec using ctrl or command + enter
 			if ((e.ctrlKey || e.metaKey) && (e.key === "Enter" || e.keyCode === 13 || e.keyCode === 10)) {
 				this.queuePrompt(e.shiftKey ? -1 : 0);
 			}
@@ -1091,7 +1091,7 @@ export class ComfyApp {
 					const p = await this.graphToPrompt();
 
 					try {
-						await api.queuePrompt(number, p);
+						await api.queueExec(number, p);
 					} catch (error) {
 						this.ui.dialog.show(error.response || error.toString());
 						break;
