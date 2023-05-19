@@ -153,7 +153,7 @@ class ComfyApi extends EventTarget {
 			body.number = number;
 		}
 
-		const res = await fetch("/prompt", {
+		const res = await fetch("/exec", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

@@ -10,7 +10,6 @@ import gc
 import torch
 import nodes
 
-import comfy.model_management
 
 def get_input_data(inputs, class_def, unique_id, outputs={}, prompt={}, extra_data={}):
     valid_inputs = class_def.INPUT_TYPES()
@@ -291,7 +290,7 @@ def validate_prompt(prompt):
     return (True, "")
 
 
-class PromptQueue:
+class ExecQueue:
     def __init__(self, server):
         self.server = server
         self.mutex = threading.RLock()

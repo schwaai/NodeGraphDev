@@ -18,7 +18,7 @@ except ImportError:
     sys.exit()
 
 import mimetypes
-from comfy.cli_args import args
+from args import args
 
 
 @web.middleware
@@ -45,9 +45,9 @@ def create_cors_middleware(allowed_origin: str):
 
     return cors_middleware
 
-class PromptServer():
+class ExecServer():
     def __init__(self, loop):
-        PromptServer.instance = self
+        ExecServer.instance = self
 
         mimetypes.init(); 
         mimetypes.types_map['.js'] = 'application/javascript; charset=utf-8'
@@ -56,11 +56,7 @@ class PromptServer():
         self.messages = asyncio.Queue()
         self.number = 0
 
-        middlewares = [cache_control]
-        if args.enable_cors_header:
-            middlewares.append(create_cors_middleware(args.enable_cors_header))
-
-        self.app = web.Application(client_max_size=20971520, middlewares=middlewares)
+        self.app = web.Application(client_max_size=20971520)
         self.sockets = dict()
         self.web_root = os.path.join(os.path.dirname(
             os.path.realpath(__file__)), "web")
