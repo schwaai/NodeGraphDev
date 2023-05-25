@@ -448,7 +448,7 @@ export class ComfyUI {
 				$el("button.comfy-settings-btn", { textContent: "⚙️", onclick: () => this.settings.show() }),
 			]),
 			$el("button.comfy-queue-btn", {
-				textContent: "Queue",
+				textContent: "Execute",
 				onclick: () => app.queuePrompt(0, this.batchCount),
 			}),
 			$el("div", {}, [

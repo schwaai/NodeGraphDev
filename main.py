@@ -72,6 +72,8 @@ def load_extra_path_config(yaml_path):
 
 
 if __name__ == "__main__":
+    from nodes import init_custom_nodes
+    init_custom_nodes()
     cleanup_temp()
 
     loop = asyncio.new_event_loop()
