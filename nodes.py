@@ -169,6 +169,7 @@ class VAEEncodeForInpaint:
     CATEGORY = "latent/inpaint"
 
     def encode(self, vae, pixels, mask):
+        pixels = pixels[:,:,:,:3]
         x = (pixels.shape[1] // 64) * 64
         y = (pixels.shape[2] // 64) * 64
         mask = torch.nn.functional.interpolate(mask[None,None,], size=(pixels.shape[1], pixels.shape[2]), mode="bilinear")[0][0]
