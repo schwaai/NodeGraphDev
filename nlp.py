@@ -84,13 +84,13 @@ class SimpleTextWidget2x2(abc.ABC, metaclass=WidgetMetaclass):
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "text1": ("STRING", {"multiline": True}),
+                "convo": ("STRING", {"multiline": True}),
                 "text2": ("STRING", {"multiline": True}),
             },
 
         }
     @abc.abstractmethod
-    def handler(self, text1,text2):
+    def handler(self, convo,text2):
         """All subclasses must provide a handler method"""
         pass
 
@@ -149,10 +149,10 @@ class LLMCompletionPrepend(SimpleTextWidget2x1):
         self.server_string = server_obj_holder[0]["server_strings"]
         self.server_string[self.SSID] = []
 
-    def handler(self, text1, text2):
-        if text1 == "":
+    def handler(self, convo, text2):
+        if convo == "":
             return ("None",)
-        completion = self.func(text1+text2)
+        completion = self.func(convo+text2)
         self.server_string[self.SSID].append(completion)
 
         return (completion, )
@@ -170,18 +170,18 @@ class LLMConvo(SimpleTextWidget2x2):
         self.server_string = server_obj_holder[0]["server_strings"]
         self.server_string[self.SSID] = []
 
-    def handler(self, text1, text2):
+    def handler(self, convo, text2):
         """
         text1 is the conversation history, text2 is the user input
         for the output the first return is the appended conversation and the second is the completion
         """
-        if text1 == "":
+        if convo == "":
             return ("None",)
 
-        completion = self.func(text1+text2)
+        completion = self.func(convo+text2)
         self.server_string[self.SSID].append(completion)
 
-        return (text1+"\n"+text2+"\n"+completion, completion,)
+        return (convo+"\n"+text2+"\n"+completion, completion,)
 class TextConcat(SimpleTextWidget2x1):
     """Uses the input text to call the specified LLM model and returns the output string"""
 
