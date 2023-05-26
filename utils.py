@@ -20,3 +20,7 @@ class ShowLastExec:
         return {"ui": {"text": text}, "result": (text,)}
         # return ret
 
+
+NODE_CLASS_MAPPINGS = {
+    "ShowLastExec": ShowLastExec,
+}
