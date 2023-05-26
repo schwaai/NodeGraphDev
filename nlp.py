@@ -129,6 +129,8 @@ class LLMCompletion(SimpleTextWidget):
         self.server_string[self.SSID] = "empty"
 
     def handler(self, text):
+        if text == "":
+            return ("None",)
         completion = self.func(text)
         self.server_string[self.SSID] = completion
         return (completion,)
@@ -148,6 +150,8 @@ class LLMCompletionPrepend(SimpleTextWidget2x1):
         self.server_string[self.SSID] = []
 
     def handler(self, text1, text2):
+        if text1 == "":
+            return ("None",)
         completion = self.func(text1+text2)
         self.server_string[self.SSID].append(completion)
 
@@ -171,6 +175,9 @@ class LLMConvo(SimpleTextWidget2x2):
         text1 is the conversation history, text2 is the user input
         for the output the first return is the appended conversation and the second is the completion
         """
+        if text1 == "":
+            return ("None",)
+
         completion = self.func(text1+text2)
         self.server_string[self.SSID].append(completion)
 
