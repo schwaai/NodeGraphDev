@@ -69,7 +69,14 @@ def add_model_folder_path(folder_name, full_folder_path):
         folder_names_and_paths[folder_name][0].append(full_folder_path)
 
 def get_folder_paths(folder_name):
-    return folder_names_and_paths[folder_name][0][:]
+    try:
+        ret = folder_names_and_paths[folder_name][0][:]
+    except KeyError as e:
+        if folder_name=="custom_nodes":
+            # prepend the base path to the folder path
+            return [os.path.join(os.path.dirname(os.path.realpath(__file__)), "custom_nodes")]
+
+    return
 
 def recursive_search(directory):
     result = []

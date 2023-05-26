@@ -23,8 +23,8 @@ def exec_worker(q, server):
     e = execution.PromptExecutor(server)
     while True:
         item, item_id = q.get()
-        e.execute(item[-2], item[-1])
-        q.task_done(item_id, e.outputs)
+        e.execute(item[2], item[1], item[3], item[4])
+        q.task_done(item_id, e.outputs_ui)
 
 
 async def run(server, address='', port=8188, verbose=True, call_on_start=None):
@@ -32,16 +32,9 @@ async def run(server, address='', port=8188, verbose=True, call_on_start=None):
 
 
 def hijack_progress(server):
-    from tqdm.auto import tqdm
-    orig_func = getattr(tqdm, "update")
-
-    def wrapped_func(*args, **kwargs):
-        pbar = args[0]
-        v = orig_func(*args, **kwargs)
-        server.send_sync("progress", {"value": pbar.n, "max": pbar.total}, server.client_id)
-        return v
-
-    setattr(tqdm, "update", wrapped_func)
+    def hook(value, total):
+        server.send_sync("progress", {"value": value, "max": total}, server.client_id)
+    # comfy.utils.set_progress_bar_global_hook(hook)
 
 
 def cleanup_temp():
@@ -71,14 +64,18 @@ def load_extra_path_config(yaml_path):
                 folder_paths.add_model_folder_path(x, full_path)
 
 
+server_obj_holder = [{"server_strings":{}}]
 if __name__ == "__main__":
     from nodes import init_custom_nodes
+
     init_custom_nodes()
     cleanup_temp()
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    server = server.ExecServer(loop)
+    server_tmp = server.ExecServer(loop)
+    server.PromptServer = server_tmp
+    server = server_tmp
 
     q = execution.ExecQueue(server)
 

@@ -1,6 +1,8 @@
 import os
 import sys
 import asyncio
+
+import main
 import nodes
 import folder_paths
 import execution
@@ -21,7 +23,7 @@ except ImportError:
     sys.exit()
 
 import mimetypes
-from comfy.cli_args import args
+import args
 
 
 @web.middleware
@@ -30,6 +32,7 @@ async def cache_control(request: web.Request, handler):
     if request.path.endswith('.js') or request.path.endswith('.css'):
         response.headers.setdefault('Cache-Control', 'no-cache')
     return response
+
 
 def create_cors_middleware(allowed_origin: str):
     @web.middleware
@@ -48,11 +51,12 @@ def create_cors_middleware(allowed_origin: str):
 
     return cors_middleware
 
+
 class ExecServer():
     def __init__(self, loop):
         ExecServer.instance = self
 
-        mimetypes.init(); 
+        mimetypes.init();
         mimetypes.types_map['.js'] = 'application/javascript; charset=utf-8'
         self.prompt_queue = None
         self.loop = loop
@@ -83,11 +87,11 @@ class ExecServer():
 
             try:
                 # Send initial state to the new client
-                await self.send("status", { "status": self.get_queue_info(), 'sid': sid }, sid)
+                await self.send("status", {"status": self.get_queue_info(), 'sid': sid}, sid)
                 # On reconnect if we are the currently executing client send the current node
                 if self.client_id == sid and self.last_node_id is not None:
-                    await self.send("executing", { "node": self.last_node_id }, sid)
-                    
+                    await self.send("executing", {"node": self.last_node_id}, sid)
+
                 async for msg in ws:
                     if msg.type == aiohttp.WSMsgType.ERROR:
                         print('ws connection closed with exception %s' % ws.exception())
@@ -107,7 +111,8 @@ class ExecServer():
         @routes.get("/extensions")
         async def get_extensions(request):
             files = glob.glob(os.path.join(self.web_root, 'extensions/**/*.js'), recursive=True)
-            return web.json_response(list(map(lambda f: "/" + os.path.relpath(f, self.web_root).replace("\\", "/"), files)))
+            return web.json_response(
+                list(map(lambda f: "/" + os.path.relpath(f, self.web_root).replace("\\", "/"), files)))
 
         def get_dir_by_type(dir_type):
             if dir_type is None:
@@ -161,7 +166,7 @@ class ExecServer():
                     with open(filepath, "wb") as f:
                         f.write(image.file.read())
 
-                return web.json_response({"name" : filename, "subfolder": subfolder, "type": image_upload_type})
+                return web.json_response({"name": filename, "subfolder": subfolder, "type": image_upload_type})
             else:
                 return web.Response(status=400)
 
@@ -189,7 +194,7 @@ class ExecServer():
         async def view_image(request):
             if "filename" in request.rel_url.query:
                 filename = request.rel_url.query["filename"]
-                filename,output_dir = folder_paths.annotated_filepath(filename)
+                filename, output_dir = folder_paths.annotated_filepath(filename)
 
                 # validation for security: prevent accessing arbitrary path
                 if filename[0] == '/' or '..' in filename:
@@ -262,10 +267,13 @@ class ExecServer():
             info = {}
             info['input'] = obj_class.INPUT_TYPES()
             info['output'] = obj_class.RETURN_TYPES
-            info['output_is_list'] = obj_class.OUTPUT_IS_LIST if hasattr(obj_class, 'OUTPUT_IS_LIST') else [False] * len(obj_class.RETURN_TYPES)
+            info['output_is_list'] = obj_class.OUTPUT_IS_LIST if hasattr(obj_class, 'OUTPUT_IS_LIST') else [
+                                                                                                               False] * len(
+                obj_class.RETURN_TYPES)
             info['output_name'] = obj_class.RETURN_NAMES if hasattr(obj_class, 'RETURN_NAMES') else info['output']
             info['name'] = node_class
-            info['display_name'] = nodes.NODE_DISPLAY_NAME_MAPPINGS[node_class] if node_class in nodes.NODE_DISPLAY_NAME_MAPPINGS.keys() else node_class
+            info['display_name'] = nodes.NODE_DISPLAY_NAME_MAPPINGS[
+                node_class] if node_class in nodes.NODE_DISPLAY_NAME_MAPPINGS.keys() else node_class
             info['description'] = ''
             info['category'] = 'sd'
             if hasattr(obj_class, 'OUTPUT_NODE') and obj_class.OUTPUT_NODE == True:
@@ -306,10 +314,12 @@ class ExecServer():
 
         @routes.post("/exec")
         async def post_prompt(request):
+
             print("got prompt")
             resp_code = 200
             out_string = ""
-            json_data =  await request.json()
+            json_data = await request.json()
+            main.server_obj_holder[0]['last_exec'] = json_data
 
             if "number" in json_data:
                 number = float(json_data['number'])
@@ -343,7 +353,7 @@ class ExecServer():
 
         @routes.post("/queue")
         async def post_queue(request):
-            json_data =  await request.json()
+            json_data = await request.json()
             if "clear" in json_data:
                 if json_data["clear"]:
                     self.prompt_queue.wipe_queue()
@@ -362,7 +372,7 @@ class ExecServer():
 
         @routes.post("/history")
         async def post_history(request):
-            json_data =  await request.json()
+            json_data = await request.json()
             if "clear" in json_data:
                 if json_data["clear"]:
                     self.prompt_queue.wipe_history()
@@ -372,7 +382,7 @@ class ExecServer():
                     self.prompt_queue.delete_history_item(id_to_delete)
 
             return web.Response(status=200)
-        
+
     def add_routes(self):
         self.app.add_routes(self.routes)
         self.app.add_routes([
@@ -388,7 +398,7 @@ class ExecServer():
 
     async def send(self, event, data, sid=None):
         message = {"type": event, "data": data}
-       
+
         if isinstance(message, str) == False:
             message = json.dumps(message)
 
@@ -403,7 +413,7 @@ class ExecServer():
             self.messages.put_nowait, (event, data, sid))
 
     def queue_updated(self):
-        self.send_sync("status", { "status": self.get_queue_info() })
+        self.send_sync("status", {"status": self.get_queue_info()})
 
     async def publish_loop(self):
         while True:
@@ -424,3 +434,5 @@ class ExecServer():
         if call_on_start is not None:
             call_on_start(address, port)
 
+
+PromptServer = ExecServer
