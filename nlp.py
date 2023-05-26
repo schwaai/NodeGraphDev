@@ -174,7 +174,7 @@ class LLMConvo(SimpleTextWidget2x2):
         completion = self.func(text1+text2)
         self.server_string[self.SSID].append(completion)
 
-        return (text1+"\n"+text2, completion,)
+        return (text1+"\n"+text2+"n"+completion, completion,)
 class TextConcat(SimpleTextWidget2x1):
     """Uses the input text to call the specified LLM model and returns the output string"""
 
