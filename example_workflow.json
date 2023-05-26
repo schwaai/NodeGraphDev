@@ -1,0 +1,396 @@
+{
+  "last_node_id": 67,
+  "last_link_id": 100,
+  "nodes": [
+    {
+      "id": 60,
+      "type": "ShowText",
+      "pos": [
+        1900,
+        450
+      ],
+      "size": [
+        480,
+        330
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 91
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "Once in a small village lived a young boy named Jack, who dreamed of going to space. Even though his family wasn't rich, Jack never gave up his dream and worked hard to achieve it. He studied at night and day, and his dedication finally paid off when he received a scholarship for space studies! Jack didn't give up when faced with difficulties; instead, he worked harder to pursue his ambition. Eventually, he achieved his dream of becoming an astronaut and brought pride to his village."
+      ]
+    },
+    {
+      "id": 59,
+      "type": "ShowText",
+      "pos": [
+        1900,
+        290
+      ],
+      "size": [
+        480,
+        120
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 90
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "\nPlease write a short story for me just one paragraph.\nOnce upon a time, there lived a young boy named Jack. He lived in a small village surrounded by lush green fields and tall trees. Jack had a big dream of becoming an astronaut. Despite his family's limited resources, he worked hard, studied day and night, and never lost hope. One day, his hard work paid off, and he got selected for a scholarship program for space studies. With a determined heart, he went on to achieve his dream and made his village proud.\nMake this more appropriate for a middle schooler\nOnce in a small village lived a young boy named Jack, who dreamed of going to space. Even though his family wasn't rich, Jack never gave up his dream and worked hard to achieve it. He studied at night and day, and his dedication finally paid off when he received a scholarship for space studies! Jack didn't give up when faced with difficulties; instead, he worked harder to pursue his ambition. Eventually, he achieved his dream of becoming an astronaut and brought pride to his village."
+      ]
+    },
+    {
+      "id": 65,
+      "type": "ShowText",
+      "pos": [
+        1900,
+        920
+      ],
+      "size": [
+        493.3274297597063,
+        151.065472889523
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 99
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "\nPlease write a short story for me just one paragraph.\nOnce upon a time, there lived a young boy named Jack. He lived in a small village surrounded by lush green fields and tall trees. Jack had a big dream of becoming an astronaut. Despite his family's limited resources, he worked hard, studied day and night, and never lost hope. One day, his hard work paid off, and he got selected for a scholarship program for space studies. With a determined heart, he went on to achieve his dream and made his village proud.\nMake it a children's story\nOnce upon a time, in a small village, there lived a boy named Jack. He loved the stars and dreamed of being an astronaut. Even though Jack's family didn't have a lot of money, he didn't give up on his dream. He studied hard every day and night, and he never lost hope! One day, Jack's dream came true, and he got accepted into a scholarship program for space studies! With his heart full of determination, he achieved his dream and became an astronaut, making his village proud, and inspiring other children to follow their own dreams!"
+      ]
+    },
+    {
+      "id": 66,
+      "type": "ShowText",
+      "pos": [
+        1900,
+        1120
+      ],
+      "size": [
+        491.1831700348648,
+        230.47738824008843
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 100
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "Once upon a time, in a small village, there lived a boy named Jack. He loved the stars and dreamed of being an astronaut. Even though Jack's family didn't have a lot of money, he didn't give up on his dream. He studied hard every day and night, and he never lost hope! One day, Jack's dream came true, and he got accepted into a scholarship program for space studies! With his heart full of determination, he achieved his dream and became an astronaut, making his village proud, and inspiring other children to follow their own dreams!"
+      ]
+    },
+    {
+      "id": 56,
+      "type": "LLMConvo",
+      "pos": [
+        610,
+        540
+      ],
+      "size": [
+        380,
+        200
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            92,
+            97
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            96
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LLMConvo"
+      },
+      "widgets_values": [
+        "",
+        "Please write a short story for me just one paragraph."
+      ]
+    },
+    {
+      "id": 63,
+      "type": "LLMConvo",
+      "pos": [
+        1465,
+        1014
+      ],
+      "size": [
+        386.312189275568,
+        98.04145882346393
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text1",
+          "type": "STRING",
+          "link": 97,
+          "widget": {
+            "name": "text1",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            99
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            100
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LLMConvo"
+      },
+      "widgets_values": [
+        " ",
+        "Make it a children's story"
+      ]
+    },
+    {
+      "id": 58,
+      "type": "LLMConvo",
+      "pos": [
+        1490,
+        370
+      ],
+      "size": [
+        372.7667347301135,
+        115.40509518710041
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text1",
+          "type": "STRING",
+          "link": 92,
+          "widget": {
+            "name": "text1",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            90
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            91
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LLMConvo"
+      },
+      "widgets_values": [
+        " ",
+        "Make this more appropriate for a middle schooler"
+      ]
+    },
+    {
+      "id": 62,
+      "type": "ShowText",
+      "pos": [
+        1010,
+        640
+      ],
+      "size": [
+        381.83386355191124,
+        276.41739912677497
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 96
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "Once upon a time, there lived a young boy named Jack. He lived in a small village surrounded by lush green fields and tall trees. Jack had a big dream of becoming an astronaut. Despite his family's limited resources, he worked hard, studied day and night, and never lost hope. One day, his hard work paid off, and he got selected for a scholarship program for space studies. With a determined heart, he went on to achieve his dream and made his village proud."
+      ]
+    }
+  ],
+  "links": [
+    [
+      90,
+      58,
+      0,
+      59,
+      0,
+      "STRING"
+    ],
+    [
+      91,
+      58,
+      1,
+      60,
+      0,
+      "STRING"
+    ],
+    [
+      92,
+      56,
+      0,
+      58,
+      0,
+      "STRING"
+    ],
+    [
+      96,
+      56,
+      1,
+      62,
+      0,
+      "STRING"
+    ],
+    [
+      97,
+      56,
+      0,
+      63,
+      0,
+      "STRING"
+    ],
+    [
+      99,
+      63,
+      0,
+      65,
+      0,
+      "STRING"
+    ],
+    [
+      100,
+      63,
+      1,
+      66,
+      0,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}
