@@ -126,6 +126,9 @@ def OAI_completion(user=None, agent=None, system=None, history: [{str: str}] = N
             except:
                 print(f"invalid history: {history} attempting reconstruction")
                 try:
+                    if isinstance(history,list):
+                        history = eval(history[0])
+
                     trimmed = history.replace("[", '').replace("]", '')
                     dqd = trimmed.replace("'", '').replace('"', '')
                     dqds = dqd.split(",")
@@ -134,8 +137,9 @@ def OAI_completion(user=None, agent=None, system=None, history: [{str: str}] = N
                     d4 = [{i[0].split(":")[0].strip(): i[0].split(":")[1].strip(),
                            i[1].split(":")[0].strip(): i[1].split(":")[1].strip()} for i in d3]
                     history = d4
-                except:
-                    warn(f"invalid history: {history} using empty history")
+                except Exception as e:
+
+                    warn(f"invalid history: {history} using empty history {e}")
                     history = []
 
     if user:
@@ -234,10 +238,18 @@ class LLMConvo(SimpleTextWidget2x2):
         if history == "" or history == " ":
             history = []
 
+        if isinstance(text2,list):
+            text2 = text2[0]
+
         completion, history = self.func(user=text2, history=history)
         self.server_string[self.SSID].append(completion)
 
-        return (json.dumps(history), completion,)
+        if not isinstance(completion, list):
+            completion = [completion]
+        hist_out = json.dumps(history)
+        if not isinstance(hist_out, list):
+            hist_out = [hist_out]
+        return (hist_out, completion,)
 
 
 class TextConcat(SimpleTextWidget2x1):

@@ -109,14 +109,25 @@ class RequestInput:
         import main
         if hidden_override == [""]:
             hidden_override = None
+
+        if hidden_override == "":
+            hidden_override = None
+
         if hidden_override is not None:
             overridden_value = hidden_override
             hidden_override = None
 
-        key = key[0]
-        overridden_value = overridden_value[0]
+        if isinstance(key, list):
+            key = key[0]
+
+        if isinstance(overridden_value, list):
+            overridden_value = overridden_value[0]
+
         main.server_obj_holder[0]["last_exec_result"] = {key: overridden_value}
-        text = [overridden_value]
+
+        if not isinstance(overridden_value, list):
+            text = [overridden_value]
+
         ret = {"ui": {"text": text}, "result": (text,)}
         return ret
 
