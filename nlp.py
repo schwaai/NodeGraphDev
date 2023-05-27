@@ -1,4 +1,7 @@
+import json
 import os
+from warnings import warn
+
 import openai
 import abc
 
@@ -60,16 +63,19 @@ class SimpleTextWidget2x1(abc.ABC, metaclass=WidgetMetaclass):
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "text1": ("STRING", {"multiline": True}),
+                "history": ("STRING", {"multiline": True}),
             },
             "optional": {
                 "text2": ("STRING", {"multiline": True}),
             }
         }
+
     @abc.abstractmethod
-    def handler(self, text1,text2):
+    def handler(self, history, text2):
         """All subclasses must provide a handler method"""
         pass
+
+
 class SimpleTextWidget2x2(abc.ABC, metaclass=WidgetMetaclass):
     """Abstract base class for simple construction"""
 
@@ -84,26 +90,60 @@ class SimpleTextWidget2x2(abc.ABC, metaclass=WidgetMetaclass):
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "convo": ("STRING", {"multiline": True}),
+                "history": ("STRING", {"multiline": True}),
                 "text2": ("STRING", {"multiline": True}),
             },
 
         }
+
     @abc.abstractmethod
-    def handler(self, convo,text2):
+    def handler(self, history, text2):
         """All subclasses must provide a handler method"""
         pass
 
-def OAI_completion(text):
-    out_message = [{"role": "user", "content": text}]
+
+def OAI_completion(user=None, agent=None, system=None, history: [{str: str}] = None):
+    """
+    OpenAI Completion API
+    :param user: user input
+    :param agent: agent input
+    :param system: system input
+    :param history: list of dicts with keys "role" and "content"
+    :return: gpt_message, history
+    """
+    if history == "undefined":
+        history = []
+    if history == "":
+        history = []
+    if not history:
+        history = []
+    else:
+        if isinstance(history, list) and isinstance(history[0], dict):
+            pass
+        else:
+            try:
+                history = json.loads(history)
+            except:
+                print(f"invalid history: {history}")
+                warn(f"invalid history: {history} using empty history")
+                history = []
+
+    if user:
+        history.append({"role": "user", "content": user})
+    if agent:
+        history.append({"role": "assistant", "content": agent})
+    if system:
+        history.append({"role": "system", "content": system})
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        messages=out_message
+        messages=history
     )
     gpt_message = response["choices"][0]["message"]["content"].strip()
+    # update the history
+    history.append({"role": "assistant", "content": gpt_message})
 
-    return gpt_message
+    return gpt_message, history
 
 
 """
@@ -131,7 +171,7 @@ class LLMCompletion(SimpleTextWidget):
     def handler(self, text):
         if text == "":
             return ("None",)
-        completion = self.func(text)
+        completion, history = self.func(user=text)
         self.server_string[self.SSID] = completion
         return (completion,)
 
@@ -149,13 +189,14 @@ class LLMCompletionPrepend(SimpleTextWidget2x1):
         self.server_string = server_obj_holder[0]["server_strings"]
         self.server_string[self.SSID] = []
 
-    def handler(self, convo, text2):
-        if convo == "":
+    def handler(self, history, text2):
+        if history == "":
             return ("None",)
-        completion = self.func(convo+text2)
+        completion, history = self.func(user=history + text2)
         self.server_string[self.SSID].append(completion)
 
-        return (completion, )
+        return (completion,)
+
 
 class LLMConvo(SimpleTextWidget2x2):
     """Uses the input text to call the specified LLM model and returns the output string"""
@@ -170,26 +211,34 @@ class LLMConvo(SimpleTextWidget2x2):
         self.server_string = server_obj_holder[0]["server_strings"]
         self.server_string[self.SSID] = []
 
-    def handler(self, convo, text2):
+    def handler(self, history, text2):
         """
         text1 is the conversation history, text2 is the user input
         for the output the first return is the appended conversation and the second is the completion
         """
-        if convo == "":
-            return ("None",)
+        try:
+            history = json.loads(history)
+        except:
+            pass
 
-        completion = self.func(convo+text2)
+        if history == "" or history == " ":
+            history = []
+
+        completion, history = self.func(user=text2, history=history)
         self.server_string[self.SSID].append(completion)
 
-        return (convo+"\n"+text2+"\n"+completion, completion,)
+        return (json.dumps(history), completion,)
+
+
 class TextConcat(SimpleTextWidget2x1):
     """Uses the input text to call the specified LLM model and returns the output string"""
 
     def __init__(self):
         super().__init__()
 
-    def handler(self, text1, text2):
-        return (text1+text2,)
+    def handler(self, history, text2):
+        return (history + text2,)
+
 
 class TextConcatNewLine(SimpleTextWidget2x1):
     """Uses the input text to call the specified LLM model and returns the output string"""
@@ -197,5 +246,5 @@ class TextConcatNewLine(SimpleTextWidget2x1):
     def __init__(self):
         super().__init__()
 
-    def handler(self, text1, text2):
-        return (text1 +"\n"+ text2,)
+    def handler(self, history, text2):
+        return (history + "\n\n" + text2,)
