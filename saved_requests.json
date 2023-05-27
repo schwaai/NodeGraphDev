@@ -1,0 +1,394 @@
+{
+  "last_exec": "{'client_id': 'a1a5871ef09b411380b47c8a8340eb8d', 'prompt': {'5': {'inputs': {'history': '', 'text2': ['26', 0]}, 'class_type': 'LLMConvo'}, '6': {'inputs': {'text': ['5', 0]}, 'class_type': 'ShowText'}, '9': {'inputs': {'text': ['5', 1]}, 'class_type': 'ShowText'}, '17': {'inputs': {'text': ['9', 0]}, 'class_type': 'ShowLastExecShowText'}, '22': {'inputs': {'key': 'result', 'value': ['9', 0]}, 'class_type': 'LastExecResultKVShowText'}, '26': {'inputs': {'key': 'prompt', 'overridden_value': 'Hi!'}, 'class_type': 'ClassRequestInputShowText'}}, 'extra_data': {'extra_pnginfo': {'workflow': {'last_node_id': 26, 'last_link_id': 29, 'nodes': [{'id': 9, 'type': 'ShowText', 'pos': [190, 550], 'size': {'0': 354.37579345703125, '1': 221.40895080566406}, 'flags': {}, 'order': 3, 'mode': 0, 'inputs': [{'name': 'text', 'type': 'STRING', 'link': 7}], 'outputs': [{'name': 'STRING', 'type': 'STRING', 'links': [23, 27], 'slot_index': 0}], 'properties': {'Node name for S&R': 'ShowText'}}, {'id': 5, 'type': 'LLMConvo', 'pos': [-230, 440], 'size': {'0': 400, '1': 200}, 'flags': {}, 'order': 1, 'mode': 0, 'inputs': [{'name': 'text2', 'type': 'STRING', 'link': 29, 'widget': {'name': 'text2', 'config': ['STRING', {'multiline': True}]}}], 'outputs': [{'name': 'STRING', 'type': 'STRING', 'links': [4], 'slot_index': 0}, {'name': 'STRING', 'type': 'STRING', 'links': [7], 'slot_index': 1}], 'properties': {'Node name for S&R': 'LLMConvo'}, 'widgets_values': ['', 'hi!!!!!']}, {'id': 6, 'type': 'ShowText', 'pos': [200, 270], 'size': {'0': 354.37579345703125, '1': 221.40895080566406}, 'flags': {}, 'order': 2, 'mode': 0, 'inputs': [{'name': 'text', 'type': 'STRING', 'link': 4}], 'outputs': [{'name': 'STRING', 'type': 'STRING', 'links': None}], 'properties': {'Node name for S&R': 'ShowText'}}, {'id': 22, 'type': 'LastExecResultKVShowText', 'pos': [648, 289], 'size': {'0': 284.8955993652344, '1': 206.53610229492188}, 'flags': {}, 'order': 5, 'mode': 0, 'inputs': [{'name': 'value', 'type': 'STRING', 'link': 27}], 'outputs': [{'name': 'STRING', 'type': 'STRING', 'links': None}], 'properties': {'Node name for S&R': 'LastExecResultKVShowText'}, 'widgets_values': ['result']}, {'id': 17, 'type': 'ShowLastExecShowText', 'pos': [632, 545], 'size': {'0': 314.78106689453125, '1': 205.10888671875}, 'flags': {}, 'order': 4, 'mode': 0, 'inputs': [{'name': 'text', 'type': 'STRING', 'link': 23}], 'outputs': [{'name': 'STRING', 'type': 'STRING', 'links': None}], 'properties': {'Node name for S&R': 'ShowLastExecShowText'}}, {'id': 26, 'type': 'ClassRequestInputShowText', 'pos': [-747, 441], 'size': {'0': 400, '1': 200}, 'flags': {}, 'order': 0, 'mode': 0, 'outputs': [{'name': 'STRING', 'type': 'STRING', 'links': [29], 'slot_index': 0}], 'properties': {'Node name for S&R': 'ClassRequestInputShowText'}, 'widgets_values': ['prompt', 'Hi!']}], 'links': [[4, 5, 0, 6, 0, 'STRING'], [7, 5, 1, 9, 0, 'STRING'], [23, 9, 0, 17, 0, 'STRING'], [27, 9, 0, 22, 0, 'STRING'], [29, 26, 0, 5, 0, 'STRING']], 'groups': [], 'config': {}, 'extra': {}, 'version': 0.4}}, 'client_id': 'a1a5871ef09b411380b47c8a8340eb8d'}}",
+  "last_exec_json": {
+    "client_id": "a1a5871ef09b411380b47c8a8340eb8d",
+    "prompt": {
+      "5": {
+        "inputs": {
+          "history": "",
+          "text2": [
+            "28",
+            0
+          ]
+        },
+        "class_type": "LLMConvo"
+      },
+      "6": {
+        "inputs": {
+          "text": [
+            "5",
+            0
+          ]
+        },
+        "class_type": "ShowText"
+      },
+      "9": {
+        "inputs": {
+          "text": [
+            "5",
+            1
+          ]
+        },
+        "class_type": "ShowText"
+      },
+      "22": {
+        "inputs": {
+          "key": "result",
+          "value": [
+            "9",
+            0
+          ]
+        },
+        "class_type": "LastExecResultKVShowText"
+      },
+      "27": {
+        "inputs": {
+          "not_used": [
+            "9",
+            0
+          ]
+        },
+        "class_type": "ShowLastExecShowText"
+      },
+      "28": {
+        "inputs": {
+          "key": "prompt",
+          "overridden_value": "HI!!",
+          "hidden_override": "What is an apple a day?"
+        },
+        "class_type": "ClassRequestInputShowText"
+      },
+      "29": {
+        "inputs": {
+          "text": [
+            "28",
+            0
+          ]
+        },
+        "class_type": "ShowText"
+      }
+    },
+    "extra_data": {
+      "extra_pnginfo": {
+        "workflow": {
+          "last_node_id": 29,
+          "last_link_id": 32,
+          "nodes": [
+            {
+              "id": 6,
+              "type": "ShowText",
+              "pos": [
+                200,
+                270
+              ],
+              "size": {
+                "0": 354.37579345703125,
+                "1": 221.40895080566406
+              },
+              "flags": {},
+              "order": 3,
+              "mode": 0,
+              "inputs": [
+                {
+                  "name": "text",
+                  "type": "STRING",
+                  "link": 4
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "STRING",
+                  "type": "STRING",
+                  "links": null
+                }
+              ],
+              "properties": {
+                "Node name for S&R": "ShowText"
+              }
+            },
+            {
+              "id": 22,
+              "type": "LastExecResultKVShowText",
+              "pos": [
+                648,
+                289
+              ],
+              "size": {
+                "0": 284.8955993652344,
+                "1": 206.53610229492188
+              },
+              "flags": {},
+              "order": 5,
+              "mode": 0,
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "STRING",
+                  "link": 27
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "STRING",
+                  "type": "STRING",
+                  "links": null
+                }
+              ],
+              "properties": {
+                "Node name for S&R": "LastExecResultKVShowText"
+              },
+              "widgets_values": [
+                "result"
+              ]
+            },
+            {
+              "id": 5,
+              "type": "LLMConvo",
+              "pos": [
+                -268,
+                444
+              ],
+              "size": {
+                "0": 400,
+                "1": 200
+              },
+              "flags": {},
+              "order": 1,
+              "mode": 0,
+              "inputs": [
+                {
+                  "name": "text2",
+                  "type": "STRING",
+                  "link": 31,
+                  "widget": {
+                    "name": "text2",
+                    "config": [
+                      "STRING",
+                      {
+                        "multiline": true
+                      }
+                    ]
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "STRING",
+                  "type": "STRING",
+                  "links": [
+                    4
+                  ],
+                  "slot_index": 0
+                },
+                {
+                  "name": "STRING",
+                  "type": "STRING",
+                  "links": [
+                    7
+                  ],
+                  "slot_index": 1
+                }
+              ],
+              "properties": {
+                "Node name for S&R": "LLMConvo"
+              },
+              "widgets_values": [
+                "",
+                "hi!!!!!"
+              ]
+            },
+            {
+              "id": 9,
+              "type": "ShowText",
+              "pos": [
+                190,
+                550
+              ],
+              "size": {
+                "0": 354.37579345703125,
+                "1": 221.40895080566406
+              },
+              "flags": {},
+              "order": 4,
+              "mode": 0,
+              "inputs": [
+                {
+                  "name": "text",
+                  "type": "STRING",
+                  "link": 7
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "STRING",
+                  "type": "STRING",
+                  "links": [
+                    27,
+                    30
+                  ],
+                  "slot_index": 0
+                }
+              ],
+              "properties": {
+                "Node name for S&R": "ShowText"
+              }
+            },
+            {
+              "id": 27,
+              "type": "ShowLastExecShowText",
+              "pos": [
+                631,
+                609
+              ],
+              "size": {
+                "0": 306.0000305175781,
+                "1": 209
+              },
+              "flags": {},
+              "order": 6,
+              "mode": 0,
+              "inputs": [
+                {
+                  "name": "not_used",
+                  "type": "STRING",
+                  "link": 30
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "STRING",
+                  "type": "STRING",
+                  "links": null
+                }
+              ],
+              "properties": {
+                "Node name for S&R": "ShowLastExecShowText"
+              }
+            },
+            {
+              "id": 29,
+              "type": "ShowText",
+              "pos": [
+                -437,
+                91
+              ],
+              "size": {
+                "0": 354.37579345703125,
+                "1": 221.40895080566406
+              },
+              "flags": {},
+              "order": 2,
+              "mode": 0,
+              "inputs": [
+                {
+                  "name": "text",
+                  "type": "STRING",
+                  "link": 32
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "STRING",
+                  "type": "STRING",
+                  "links": null
+                }
+              ],
+              "properties": {
+                "Node name for S&R": "ShowText"
+              }
+            },
+            {
+              "id": 28,
+              "type": "ClassRequestInputShowText",
+              "pos": [
+                -915,
+                448
+              ],
+              "size": {
+                "0": 400,
+                "1": 200
+              },
+              "flags": {},
+              "order": 0,
+              "mode": 0,
+              "outputs": [
+                {
+                  "name": "STRING",
+                  "type": "STRING",
+                  "links": [
+                    31,
+                    32
+                  ],
+                  "slot_index": 0
+                }
+              ],
+              "properties": {
+                "Node name for S&R": "ClassRequestInputShowText"
+              },
+              "widgets_values": [
+                "prompt",
+                "HI!!",
+                ""
+              ]
+            }
+          ],
+          "links": [
+            [
+              4,
+              5,
+              0,
+              6,
+              0,
+              "STRING"
+            ],
+            [
+              7,
+              5,
+              1,
+              9,
+              0,
+              "STRING"
+            ],
+            [
+              27,
+              9,
+              0,
+              22,
+              0,
+              "STRING"
+            ],
+            [
+              30,
+              9,
+              0,
+              27,
+              0,
+              "STRING"
+            ],
+            [
+              31,
+              28,
+              0,
+              5,
+              0,
+              "STRING"
+            ],
+            [
+              32,
+              28,
+              0,
+              29,
+              0,
+              "STRING"
+            ]
+          ],
+          "groups": [],
+          "config": {},
+          "extra": {},
+          "version": 0.4
+        }
+      },
+      "client_id": "a1a5871ef09b411380b47c8a8340eb8d"
+    }
+  }
+}
