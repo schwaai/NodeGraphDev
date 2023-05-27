@@ -9,11 +9,10 @@ try:
 except:
     print("Could not import safetensors, safetensors support disabled.")
 
-
 folder_names_and_paths = {}
 
-
-models_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "models")
+base_path = os.path.dirname(os.path.realpath(__file__))
+models_dir = os.path.join(base_path, "models")
 folder_names_and_paths["checkpoints"] = ([os.path.join(models_dir, "checkpoints")], supported_ckpt_extensions)
 folder_names_and_paths["configs"] = ([os.path.join(models_dir, "configs")], [".yaml"])
 
@@ -25,12 +24,21 @@ folder_names_and_paths["style_models"] = ([os.path.join(models_dir, "style_model
 folder_names_and_paths["embeddings"] = ([os.path.join(models_dir, "embeddings")], supported_pt_extensions)
 folder_names_and_paths["diffusers"] = ([os.path.join(models_dir, "diffusers")], ["folder"])
 
-folder_names_and_paths["controlnet"] = ([os.path.join(models_dir, "controlnet"), os.path.join(models_dir, "t2i_adapter")], supported_pt_extensions)
+folder_names_and_paths["controlnet"] = (
+[os.path.join(models_dir, "controlnet"), os.path.join(models_dir, "t2i_adapter")], supported_pt_extensions)
+folder_names_and_paths["gligen"] = ([os.path.join(models_dir, "gligen")], supported_pt_extensions)
+
 folder_names_and_paths["upscale_models"] = ([os.path.join(models_dir, "upscale_models")], supported_pt_extensions)
+
+folder_names_and_paths["custom_nodes"] = ([os.path.join(base_path, "custom_nodes")], [])
+
+folder_names_and_paths["hypernetworks"] = ([os.path.join(models_dir, "hypernetworks")], supported_pt_extensions)
 
 output_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), "output")
 temp_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
 input_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), "input")
+server_state_json = os.path.join(os.path.dirname(os.path.realpath(__file__)), "server_state.json")
+saved_requests_json = os.path.join(os.path.dirname(os.path.realpath(__file__)), "saved_requests.json")
 
 if not os.path.exists(input_directory):
     os.makedirs(input_directory)
@@ -71,12 +79,14 @@ def add_model_folder_path(folder_name, full_folder_path):
 def get_folder_paths(folder_name):
     return folder_names_and_paths[folder_name][0][:]
 
+    return
+
 def recursive_search(directory):
     result = []
     for root, subdir, file in os.walk(directory, followlinks=True):
         for filepath in file:
-            #we os.path,join directory with a blank string to generate a path separator at the end.
-            result.append(os.path.join(root, filepath).replace(os.path.join(directory,''),''))
+            # we os.path,join directory with a blank string to generate a path separator at the end.
+            result.append(os.path.join(root, filepath).replace(os.path.join(directory, ''), ''))
     return result
 
 def filter_files_extensions(files, extensions):
@@ -101,4 +111,38 @@ def get_filename_list(folder_name):
         output_list.update(filter_files_extensions(recursive_search(x), folders[1]))
     return sorted(list(output_list))
 
+def get_save_image_path(filename_prefix, output_dir, image_width=0, image_height=0):
+    def map_filename(filename):
+        prefix_len = len(os.path.basename(filename_prefix))
+        prefix = filename[:prefix_len + 1]
+        try:
+            digits = int(filename[prefix_len + 1:].split('_')[0])
+        except:
+            digits = 0
+        return (digits, prefix)
 
+    def compute_vars(input, image_width, image_height):
+        input = input.replace("%width%", str(image_width))
+        input = input.replace("%height%", str(image_height))
+        return input
+
+    filename_prefix = compute_vars(filename_prefix, image_width, image_height)
+
+    subfolder = os.path.dirname(os.path.normpath(filename_prefix))
+    filename = os.path.basename(os.path.normpath(filename_prefix))
+
+    full_output_folder = os.path.join(output_dir, subfolder)
+
+    if os.path.commonpath((output_dir, os.path.abspath(full_output_folder))) != output_dir:
+        print("Saving image outside the output folder is not allowed.")
+        return {}
+
+    try:
+        counter = max(filter(lambda a: a[1][:-1] == filename and a[1][-1] == "_",
+                             map(map_filename, os.listdir(full_output_folder))))[0] + 1
+    except ValueError:
+        counter = 1
+    except FileNotFoundError:
+        os.makedirs(full_output_folder, exist_ok=True)
+        counter = 1
+    return full_output_folder, filename, counter, subfolder, filename_prefix

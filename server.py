@@ -1,6 +1,7 @@
 import os
 import sys
 import asyncio
+import main
 import nodes
 import folder_paths
 import execution
@@ -49,7 +50,7 @@ class PromptServer():
     def __init__(self, loop):
         PromptServer.instance = self
 
-        mimetypes.init(); 
+        mimetypes.init();
         mimetypes.types_map['.js'] = 'application/javascript; charset=utf-8'
         self.prompt_queue = None
         self.loop = loop
@@ -78,7 +79,7 @@ class PromptServer():
                 # Reusing existing session, remove old
                 self.sockets.pop(sid, None)
             else:
-                sid = uuid.uuid4().hex      
+                sid = uuid.uuid4().hex
 
             self.sockets[sid] = ws
 
@@ -88,7 +89,7 @@ class PromptServer():
                 # On reconnect if we are the currently executing client send the current node
                 if self.client_id == sid and self.last_node_id is not None:
                     await self.send("executing", { "node": self.last_node_id }, sid)
-                    
+
                 async for msg in ws:
                     if msg.type == aiohttp.WSMsgType.ERROR:
                         print('ws connection closed with exception %s' % ws.exception())
@@ -116,7 +117,7 @@ class PromptServer():
 
             if not os.path.exists(upload_dir):
                 os.makedirs(upload_dir)
-            
+
             post = await request.post()
             image = post.get("image")
 
@@ -135,7 +136,7 @@ class PromptServer():
 
                 with open(filepath, "wb") as f:
                     f.write(image.file.read())
-                
+
                 return web.json_response({"name" : filename})
             else:
                 return web.Response(status=400)
@@ -161,7 +162,7 @@ class PromptServer():
 
                 if os.path.isfile(file):
                     return web.FileResponse(file, headers={"Content-Disposition": f"filename=\"{filename}\""})
-                
+
             return web.Response(status=404)
 
         @routes.get("/prompt")
@@ -203,7 +204,13 @@ class PromptServer():
             print("got prompt")
             resp_code = 200
             out_string = ""
-            json_data =  await request.json()
+
+            try:
+                json_data = await request.json()
+            except TypeError as e:
+                json_data = request.json()
+
+            main.server_obj_holder[0]["last_exec_json"] = json_data
 
             if "number" in json_data:
                 number = float(json_data['number'])
@@ -232,7 +239,43 @@ class PromptServer():
                     print("invalid prompt:", valid[1])
 
             return web.Response(body=out_string, status=resp_code)
-        
+
+        @routes.post("/infer")
+        async def post_infer(request):
+            """
+            load a request and run it on /exec (post_prompt)
+            """
+            # get the graphs name from the request
+            json_data:dict = await request.json()
+            graph_name = json_data.pop("graph_name", None)
+
+            # get the servers saved graph from the saved json file
+            # also create the file if it doesn't exist
+            with open(folder_paths.saved_requests_json, 'r+') as f:
+                try:
+                    saved_requests = json.load(f)
+                except:
+                    saved_requests = {}
+                    json.dump(saved_requests, f)
+
+            saved_request_json = saved_requests[graph_name]
+            inputs_to_override=[]
+            for source_k,source_v in json_data.items():
+                for target_k, target_v in saved_request_json["prompt"].items():
+                    if "class_type" in target_v:
+                        if target_v["class_type"] == "ClassRequestInputShowText":
+                            if source_k == target_v["inputs"]["key"]:
+                                target_v["inputs"]["hidden_override"] = source_v
+
+
+
+            request.json = lambda: saved_request_json
+            # now await the request to /exec
+            result = await post_prompt(request)
+
+            result2 = main.server_obj_holder[0]['last_exec_result']
+
+            return web.json_response(result2, status=200)
         @routes.post("/queue")
         async def post_queue(request):
             json_data =  await request.json()
@@ -244,7 +287,7 @@ class PromptServer():
                 for id_to_delete in to_delete:
                     delete_func = lambda a: a[1] == int(id_to_delete)
                     self.prompt_queue.delete_queue_item(delete_func)
-                    
+
             return web.Response(status=200)
 
         @routes.post("/interrupt")
@@ -264,7 +307,7 @@ class PromptServer():
                     self.prompt_queue.delete_history_item(id_to_delete)
 
             return web.Response(status=200)
-        
+
     def add_routes(self):
         self.app.add_routes(self.routes)
         self.app.add_routes([
@@ -280,7 +323,7 @@ class PromptServer():
 
     async def send(self, event, data, sid=None):
         message = {"type": event, "data": data}
-       
+
         if isinstance(message, str) == False:
             message = json.dumps(message)
 
