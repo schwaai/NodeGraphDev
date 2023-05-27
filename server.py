@@ -312,14 +312,22 @@ class ExecServer():
             queue_info['queue_pending'] = current_queue[1]
             return web.json_response(queue_info)
 
+
+
+
+
         @routes.post("/exec")
         async def post_prompt(request):
 
             print("got prompt")
             resp_code = 200
             out_string = ""
-            json_data = await request.json()
-            main.server_obj_holder[0]['last_exec'] = json_data
+            try:
+                json_data = await request.json()
+            except TypeError as e:
+                json_data = request.json()
+
+            main.server_obj_holder[0]["last_exec_json"] = json_data
 
             if "number" in json_data:
                 number = float(json_data['number'])
@@ -351,6 +359,42 @@ class ExecServer():
             else:
                 return web.json_response({"error": "no prompt", "node_errors": []}, status=400)
 
+        @routes.post("/infer")
+        async def post_infer(request):
+            """
+            load a request and run it on /exec (post_prompt)
+            """
+            # get the graphs name from the request
+            json_data:dict = await request.json()
+            graph_name = json_data.pop("graph_name", None)
+
+            # get the servers saved graph from the saved json file
+            # also create the file if it doesn't exist
+            with open(folder_paths.saved_requests_json, 'r+') as f:
+                try:
+                    saved_requests = json.load(f)
+                except:
+                    saved_requests = {}
+                    json.dump(saved_requests, f)
+
+            saved_request_json = saved_requests[graph_name]
+            inputs_to_override=[]
+            for source_k,source_v in json_data.items():
+                for target_k, target_v in saved_request_json["prompt"].items():
+                    if "class_type" in target_v:
+                        if target_v["class_type"] == "ClassRequestInputShowText":
+                            if source_k == target_v["inputs"]["key"]:
+                                target_v["inputs"]["hidden_override"] = source_v
+
+
+
+            request.json = lambda: saved_request_json
+            # now await the request to /exec
+            result = await post_prompt(request)
+
+            result2 = main.server_obj_holder[0]['last_exec_result']
+
+            return web.json_response(result2, status=200)
         @routes.post("/queue")
         async def post_queue(request):
             json_data = await request.json()
