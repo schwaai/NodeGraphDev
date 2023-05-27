@@ -124,9 +124,19 @@ def OAI_completion(user=None, agent=None, system=None, history: [{str: str}] = N
             try:
                 history = json.loads(history)
             except:
-                print(f"invalid history: {history}")
-                warn(f"invalid history: {history} using empty history")
-                history = []
+                print(f"invalid history: {history} attempting reconstruction")
+                try:
+                    trimmed = history.replace("[", '').replace("]", '')
+                    dqd = trimmed.replace("'", '').replace('"', '')
+                    dqds = dqd.split(",")
+                    d2 = [dqds[i:i + 2] for i in range(0, len(dqds), 2)]
+                    d3 = [[i[0].strip(), i[1].strip()] for i in d2]
+                    d4 = [{i[0].split(":")[0].strip(): i[0].split(":")[1].strip(),
+                           i[1].split(":")[0].strip(): i[1].split(":")[1].strip()} for i in d3]
+                    history = d4
+                except:
+                    warn(f"invalid history: {history} using empty history")
+                    history = []
 
     if user:
         history.append({"role": "user", "content": user})
@@ -142,7 +152,7 @@ def OAI_completion(user=None, agent=None, system=None, history: [{str: str}] = N
     gpt_message = response["choices"][0]["message"]["content"].strip()
     # update the history
     history.append({"role": "assistant", "content": gpt_message})
-
+    history = json.dumps(history)
     return gpt_message, history
 
 
