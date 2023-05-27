@@ -1,0 +1,1341 @@
+{
+  "last_node_id": 174,
+  "last_link_id": 213,
+  "nodes": [
+    {
+      "id": 83,
+      "type": "ShowText",
+      "pos": [
+        3381,
+        1637
+      ],
+      "size": {
+        "0": 828.3530883789062,
+        "1": 547.8818359375
+      },
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 131
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "Sorry, as an AI language model, I do not have access to your code or context. Could you please provide more information or clarify your request?"
+      ]
+    },
+    {
+      "id": 62,
+      "type": "ShowText",
+      "pos": [
+        681,
+        467
+      ],
+      "size": {
+        "0": 733.389892578125,
+        "1": 560.16455078125
+      },
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 101
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "Chuck Norris can divide by zero."
+      ]
+    },
+    {
+      "id": 86,
+      "type": "ShowText",
+      "pos": [
+        1633,
+        2238
+      ],
+      "size": {
+        "0": 832.476806640625,
+        "1": 1495.751708984375
+      },
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 134
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "I'm sorry, but I need more information to understand which criticism you are referring to. Can you please provide more context or details?"
+      ]
+    },
+    {
+      "id": 82,
+      "type": "LLMConvo",
+      "pos": [
+        2917,
+        1557
+      ],
+      "size": {
+        "0": 397.389892578125,
+        "1": 225.16455078125
+      },
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 0
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            131
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LLMConvo"
+      },
+      "widgets_values": [
+        " ",
+        "let's see just the code"
+      ]
+    },
+    {
+      "id": 80,
+      "type": "LLMConvo",
+      "pos": [
+        2114,
+        1609
+      ],
+      "size": {
+        "0": 397.389892578125,
+        "1": 225.16455078125
+      },
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            129
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LLMConvo"
+      },
+      "widgets_values": [
+        " ",
+        "Please update based on the criticism"
+      ]
+    },
+    {
+      "id": 81,
+      "type": "ShowText",
+      "pos": [
+        2540,
+        1895
+      ],
+      "size": {
+        "0": 764.8009033203125,
+        "1": 1514.946044921875
+      },
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 129
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            136
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        " \nPlease update based on the criticism\nI'm sorry, I need more context to understand what needs to be updated based on the criticism. Can you please provide more information or specify your request?"
+      ]
+    },
+    {
+      "id": 69,
+      "type": "Reroute",
+      "pos": [
+        688,
+        1147
+      ],
+      "size": [
+        75,
+        26
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "",
+          "type": "*",
+          "link": 106
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "STRING",
+          "links": [
+            142
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "showOutputText": false,
+        "horizontal": false
+      }
+    },
+    {
+      "id": 70,
+      "type": "Reroute",
+      "pos": [
+        769,
+        243
+      ],
+      "size": [
+        75,
+        26
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "",
+          "type": "*",
+          "link": 108
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "STRING",
+          "links": [
+            109,
+            143
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "showOutputText": false,
+        "horizontal": false
+      }
+    },
+    {
+      "id": 78,
+      "type": "ShowText",
+      "pos": [
+        -246,
+        906
+      ],
+      "size": {
+        "0": 603.1657104492188,
+        "1": 196.77554321289062
+      },
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 123,
+          "slot_index": 0
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "give a chuck norris joke!\nChuck Norris can divide by zero."
+      ]
+    },
+    {
+      "id": 66,
+      "type": "ShowText",
+      "pos": [
+        1439,
+        1133
+      ],
+      "size": {
+        "0": 500,
+        "1": 400
+      },
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 100
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "There are multiple logical inconsistencies in this statement. They are:\n\n1. It is mathematically impossible to divide any number by zero, as dividing by zero is undefined.\n2. Chuck Norris, being a fictional character, cannot perform any mathematical operation.\n3. The statement contradicts the fundamental laws of mathematics and logic."
+      ]
+    },
+    {
+      "id": 76,
+      "type": "TextConcatNewLine",
+      "pos": [
+        535,
+        1421
+      ],
+      "size": {
+        "0": 226.6518096923828,
+        "1": 73.17166900634766
+      },
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text1",
+          "type": "STRING",
+          "link": 121,
+          "widget": {
+            "name": "text1",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        },
+        {
+          "name": "text2",
+          "type": "STRING",
+          "link": 120,
+          "widget": {
+            "name": "text2",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            122
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextConcatNewLine"
+      },
+      "widgets_values": [
+        "",
+        ""
+      ]
+    },
+    {
+      "id": 84,
+      "type": "LLMConvo",
+      "pos": [
+        1661,
+        1610
+      ],
+      "size": {
+        "0": 397.389892578125,
+        "1": 225.16455078125
+      },
+      "flags": {
+        "collapsed": false
+      },
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 0
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            134
+          ],
+          "slot_index": 1
+        }
+      ],
+      "title": "EXPAND",
+      "properties": {
+        "Node name for S&R": "LLMConvo"
+      },
+      "widgets_values": [
+        " ",
+        "expand on this critism"
+      ]
+    },
+    {
+      "id": 65,
+      "type": "ShowText",
+      "pos": [
+        1446,
+        927
+      ],
+      "size": {
+        "0": 500,
+        "1": 150
+      },
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 99
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "Chuck Norris can divide by zero.\nAnalyze for logical inconsistencies, state the inconstancies as a list do not modify the code\nThere are multiple logical inconsistencies in this statement. They are:\n\n1. It is mathematically impossible to divide any number by zero, as dividing by zero is undefined.\n2. Chuck Norris, being a fictional character, cannot perform any mathematical operation.\n3. The statement contradicts the fundamental laws of mathematics and logic."
+      ]
+    },
+    {
+      "id": 58,
+      "type": "LLMConvo",
+      "pos": [
+        897,
+        236
+      ],
+      "size": {
+        "0": 372.7667236328125,
+        "1": 146
+      },
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "convo",
+          "type": "STRING",
+          "link": 143,
+          "widget": {
+            "name": "convo",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            90
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            91,
+            125
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LLMConvo"
+      },
+      "widgets_values": [
+        " ",
+        "Analyze for flaws, state the flaws as a list do not modify the code"
+      ]
+    },
+    {
+      "id": 79,
+      "type": "ShowText",
+      "pos": [
+        2718,
+        306
+      ],
+      "size": {
+        "0": 828.3530883789062,
+        "1": 547.8818359375
+      },
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 126
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "1. It violates the basic mathematical rule that anything divided by zero is undefined.\n2. It defies the laws of physics and mathematics, which dictate that division by zero is impossible.\n3. It contradicts the fundamental principles of arithmetic and algebra.\n4. It undermines the validity of mathematical calculations.\n5. It contradicts the laws of logic and reasoning.There are multiple logical inconsistencies in this statement. They are:\n\n1. It is mathematically impossible to divide any number by zero, as dividing by zero is undefined.\n2. Chuck Norris, being a fictional character, cannot perform any mathematical operation.\n3. The statement contradicts the fundamental laws of mathematics and logic."
+      ]
+    },
+    {
+      "id": 168,
+      "type": "ShowText",
+      "pos": [
+        2752,
+        945
+      ],
+      "size": {
+        "0": 828.3530883789062,
+        "1": 547.8818359375
+      },
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 209
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "1. It violates the basic mathematical rule that anything divided by zero is undefined.\n2. It defies the laws of physics and mathematics, which dictate that division by zero is impossible.\n3. It contradicts the fundamental principles of arithmetic and algebra.\n4. It undermines the validity of mathematical calculations.\n5. It contradicts the laws of logic and reasoning.There are multiple logical inconsistencies in this statement. They are:\n\n1. It is mathematically impossible to divide any number by zero, as dividing by zero is undefined.\n2. Chuck Norris, being a fictional character, cannot perform any mathematical operation.\n3. The statement contradicts the fundamental laws of mathematics and logic."
+      ]
+    },
+    {
+      "id": 71,
+      "type": "TextConcat",
+      "pos": [
+        2066,
+        761
+      ],
+      "size": {
+        "0": 400,
+        "1": 200
+      },
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text1",
+          "type": "STRING",
+          "link": 125,
+          "widget": {
+            "name": "text1",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        },
+        {
+          "name": "text2",
+          "type": "STRING",
+          "link": 124,
+          "widget": {
+            "name": "text2",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            120,
+            126,
+            208
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextConcat"
+      },
+      "widgets_values": [
+        "",
+        ""
+      ]
+    },
+    {
+      "id": 68,
+      "type": "LLMCompletion",
+      "pos": [
+        307,
+        502
+      ],
+      "size": {
+        "0": 210,
+        "1": 34
+      },
+      "flags": {
+        "collapsed": false
+      },
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 213,
+          "widget": {
+            "name": "text",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          },
+          "slot_index": 0
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            101,
+            106,
+            108,
+            118
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LLMCompletion"
+      },
+      "widgets_values": [
+        "give a chuck norris joke!"
+      ]
+    },
+    {
+      "id": 74,
+      "type": "PrimitiveNode",
+      "pos": [
+        -782,
+        447
+      ],
+      "size": {
+        "0": 418.72869873046875,
+        "1": 123.24478149414062
+      },
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "connect to widget input",
+          "type": "*",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {},
+      "widgets_values": []
+    },
+    {
+      "id": 75,
+      "type": "TextConcatNewLine",
+      "pos": [
+        106,
+        774
+      ],
+      "size": {
+        "0": 226.6518096923828,
+        "1": 73.17166900634766
+      },
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text1",
+          "type": "STRING",
+          "link": 212,
+          "widget": {
+            "name": "text1",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          },
+          "slot_index": 0
+        },
+        {
+          "name": "text2",
+          "type": "STRING",
+          "link": 118,
+          "widget": {
+            "name": "text2",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            121,
+            123
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextConcatNewLine"
+      },
+      "widgets_values": [
+        "give a chuck norris joke!",
+        ""
+      ]
+    },
+    {
+      "id": 170,
+      "type": "PrimitiveNode",
+      "pos": [
+        -790,
+        667
+      ],
+      "size": {
+        "0": 418.72869873046875,
+        "1": 123.24478149414062
+      },
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            212,
+            213
+          ],
+          "slot_index": 0,
+          "widget": {
+            "name": "text1",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        }
+      ],
+      "properties": {},
+      "widgets_values": [
+        "give a chuck norris joke!"
+      ]
+    },
+    {
+      "id": 59,
+      "type": "ShowText",
+      "pos": [
+        1448,
+        218
+      ],
+      "size": [
+        531.3291249482024,
+        145.1219456286961
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 90
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "Chuck Norris can divide by zero.\nAnalyze for flaws, state the flaws as a list do not modify the code\n1. It violates the basic mathematical rule that anything divided by zero is undefined.\n2. It defies the laws of physics and mathematics, which dictate that division by zero is impossible.\n3. It contradicts the fundamental principles of arithmetic and algebra.\n4. It undermines the validity of mathematical calculations.\n5. It contradicts the laws of logic and reasoning."
+      ]
+    },
+    {
+      "id": 60,
+      "type": "ShowText",
+      "pos": [
+        1479,
+        433
+      ],
+      "size": {
+        "0": 480,
+        "1": 330
+      },
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 91
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "1. It violates the basic mathematical rule that anything divided by zero is undefined.\n2. It defies the laws of physics and mathematics, which dictate that division by zero is impossible.\n3. It contradicts the fundamental principles of arithmetic and algebra.\n4. It undermines the validity of mathematical calculations.\n5. It contradicts the laws of logic and reasoning."
+      ]
+    },
+    {
+      "id": 77,
+      "type": "ShowText",
+      "pos": [
+        662,
+        1624
+      ],
+      "size": {
+        "0": 785.34765625,
+        "1": 642.6390991210938
+      },
+      "flags": {},
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 122
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "give a chuck norris joke!\nChuck Norris can divide by zero.\n1. It violates the basic mathematical rule that anything divided by zero is undefined.\n2. It defies the laws of physics and mathematics, which dictate that division by zero is impossible.\n3. It contradicts the fundamental principles of arithmetic and algebra.\n4. It undermines the validity of mathematical calculations.\n5. It contradicts the laws of logic and reasoning.There are multiple logical inconsistencies in this statement. They are:\n\n1. It is mathematically impossible to divide any number by zero, as dividing by zero is undefined.\n2. Chuck Norris, being a fictional character, cannot perform any mathematical operation.\n3. The statement contradicts the fundamental laws of mathematics and logic."
+      ]
+    },
+    {
+      "id": 63,
+      "type": "LLMConvo",
+      "pos": [
+        866,
+        1084
+      ],
+      "size": {
+        "0": 397.389892578125,
+        "1": 225.16455078125
+      },
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "convo",
+          "type": "STRING",
+          "link": 142,
+          "widget": {
+            "name": "convo",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            99
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            100,
+            124
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LLMConvo"
+      },
+      "widgets_values": [
+        " ",
+        "Analyze for logical inconsistencies, state the inconstancies as a list do not modify the code"
+      ]
+    },
+    {
+      "id": 173,
+      "type": "Eval Widget",
+      "pos": [
+        2154,
+        1162
+      ],
+      "size": [
+        409.6054368110558,
+        312.070145301092
+      ],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image1_in",
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "string1_in",
+          "type": "STRING",
+          "link": 208,
+          "widget": {
+            "name": "string1_in",
+            "config": [
+              "STRING",
+              {
+                "multiline": false
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            209
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Eval Widget"
+      },
+      "widgets_values": [
+        "exec_func",
+        "print(float_out,image_out,string_out)",
+        0,
+        ""
+      ]
+    }
+  ],
+  "links": [
+    [
+      90,
+      58,
+      0,
+      59,
+      0,
+      "STRING"
+    ],
+    [
+      91,
+      58,
+      1,
+      60,
+      0,
+      "STRING"
+    ],
+    [
+      99,
+      63,
+      0,
+      65,
+      0,
+      "STRING"
+    ],
+    [
+      100,
+      63,
+      1,
+      66,
+      0,
+      "STRING"
+    ],
+    [
+      101,
+      68,
+      0,
+      62,
+      0,
+      "STRING"
+    ],
+    [
+      106,
+      68,
+      0,
+      69,
+      0,
+      "*"
+    ],
+    [
+      108,
+      68,
+      0,
+      70,
+      0,
+      "*"
+    ],
+    [
+      109,
+      70,
+      0,
+      58,
+      0,
+      "STRING"
+    ],
+    [
+      118,
+      68,
+      0,
+      75,
+      1,
+      "STRING"
+    ],
+    [
+      120,
+      71,
+      0,
+      76,
+      1,
+      "STRING"
+    ],
+    [
+      121,
+      75,
+      0,
+      76,
+      0,
+      "STRING"
+    ],
+    [
+      122,
+      76,
+      0,
+      77,
+      0,
+      "STRING"
+    ],
+    [
+      123,
+      75,
+      0,
+      78,
+      0,
+      "STRING"
+    ],
+    [
+      124,
+      63,
+      1,
+      71,
+      1,
+      "STRING"
+    ],
+    [
+      125,
+      58,
+      1,
+      71,
+      0,
+      "STRING"
+    ],
+    [
+      126,
+      71,
+      0,
+      79,
+      0,
+      "STRING"
+    ],
+    [
+      129,
+      80,
+      0,
+      81,
+      0,
+      "STRING"
+    ],
+    [
+      131,
+      82,
+      1,
+      83,
+      0,
+      "STRING"
+    ],
+    [
+      134,
+      84,
+      1,
+      86,
+      0,
+      "STRING"
+    ],
+    [
+      136,
+      81,
+      0,
+      82,
+      0,
+      "STRING"
+    ],
+    [
+      142,
+      69,
+      0,
+      63,
+      0,
+      "STRING"
+    ],
+    [
+      143,
+      70,
+      0,
+      58,
+      0,
+      "STRING"
+    ],
+    [
+      208,
+      71,
+      0,
+      173,
+      1,
+      "STRING"
+    ],
+    [
+      209,
+      173,
+      0,
+      168,
+      0,
+      "STRING"
+    ],
+    [
+      212,
+      170,
+      0,
+      75,
+      0,
+      "STRING"
+    ],
+    [
+      213,
+      170,
+      0,
+      68,
+      0,
+      "STRING"
+    ]
+  ],
+  "groups": [
+    {
+      "title": "Group",
+      "bounding": [
+        -204,
+        -167,
+        599,
+        471
+      ],
+      "color": "#3f789e"
+    }
+  ],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}
