@@ -10,3 +10,5 @@ custom_nodes/
 extra_model_paths.yaml
 /.vs
 /custom_nodes.disabled/
+.idea
+.venv
