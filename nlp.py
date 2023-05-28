@@ -4,6 +4,7 @@ from warnings import warn
 
 import openai
 import abc
+import time
 
 
 class Config:
@@ -102,6 +103,63 @@ class SimpleTextWidget2x2(abc.ABC, metaclass=WidgetMetaclass):
         pass
 
 
+import os
+import openai
+
+# Set OpenAI API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+import os
+import openai
+
+# Set OpenAI API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+
+def get_openai_embedding(model, text):
+    """
+    Retrieves OpenAI embeddings for a given text using a specified model.
+
+    Args:
+    - model (str): The name of the OpenAI model to use for embeddings.
+    - text (str): The text to generate embeddings for.
+
+    Returns:
+    - A list of embeddings (each as a list of floating-point values) for the input text.
+
+    Raises:
+    - openai.error.InvalidRequestError: If unable to generate embeddings for the specified text.
+    - openai.error.AuthenticationError: If OpenAI API key is not set or is invalid.
+    - requests.exceptions.Timeout: If the request to OpenAI API times out.
+
+    Example usage:
+    >>> model = "text-embedding-ada-002"
+    >>> text = "The food was delicious and the waiter was very friendly."
+    >>> embeddings = get_openai_embedding(model, text)
+    >>> len(embeddings)
+    1
+    >>> len(embeddings[0])
+    1536
+
+    >>> text = "The quick brown fox jumped over the lazy dog."
+    >>> embeddings = get_openai_embedding(model, text)
+    >>> len(embeddings)
+    1
+    >>> len(embeddings[0])
+    1536
+
+    >>> text = "What is the meaning of life?"
+    >>> embeddings = get_openai_embedding(model, text)
+    >>> len(embeddings)
+    1
+    >>> len(embeddings[0])
+    1536
+    """
+    embeddings = openai.Embedding.create(model=model, input=text)
+    embeddings_list = [e["embedding"] for e in embeddings["data"]]
+    return embeddings_list
+
+
 def OAI_completion(user=None, agent=None, system=None, history: [{str: str}] = None):
     """
     OpenAI Completion API
@@ -115,6 +173,8 @@ def OAI_completion(user=None, agent=None, system=None, history: [{str: str}] = N
         history = []
     if history == "":
         history = []
+    if isinstance(history,dict):
+        history = [history]
     if not history:
         history = []
     else:
@@ -126,7 +186,7 @@ def OAI_completion(user=None, agent=None, system=None, history: [{str: str}] = N
             except:
                 print(f"invalid history: {history} attempting reconstruction")
                 try:
-                    if isinstance(history,list):
+                    if isinstance(history, list):
                         history = eval(history[0])
 
                     trimmed = history.replace("[", '').replace("]", '')
@@ -149,14 +209,22 @@ def OAI_completion(user=None, agent=None, system=None, history: [{str: str}] = N
     if system:
         history.append({"role": "system", "content": system})
 
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=history
-    )
+    for i in range(10):
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=history
+            )
+            time.sleep(1)
+            break
+
+        except openai.error.RateLimitError as e:
+            print(e)
+
     gpt_message = response["choices"][0]["message"]["content"].strip()
     # update the history
     history.append({"role": "assistant", "content": gpt_message})
-    history = json.dumps(history)
+
     return gpt_message, history
 
 
@@ -212,6 +280,27 @@ class LLMCompletionPrepend(SimpleTextWidget2x1):
         return (completion,)
 
 
+def list_to_hex_str(x: list):
+    import binascii, json
+    print(len(str(x)))
+
+    # str then json then hex ie str(hex(json(object)))
+    x1 = json.dumps(x)
+    x2 = binascii.hexlify(x1.encode('utf-8'))
+    x3 = str(x2)
+    return x3
+
+
+def hex_str_to_list(x: str):
+    import binascii, json
+    print(len(str(x)))
+
+    x1 = x[2:-1]
+    x2 = binascii.unhexlify(x1)
+    x3 = json.loads(x2)
+    return x3
+
+
 class LLMConvo(SimpleTextWidget2x2):
     """Uses the input text to call the specified LLM model and returns the output string"""
 
@@ -230,15 +319,24 @@ class LLMConvo(SimpleTextWidget2x2):
         text1 is the conversation history, text2 is the user input
         for the output the first return is the appended conversation and the second is the completion
         """
+        import binascii
+
         try:
             history = json.loads(history)
+        except:
+            pass
+
+        try:
+            dehexed = binascii.unhexlify(history[0][2:-1])
+            history = json.loads(dehexed)
+
         except:
             pass
 
         if history == "" or history == " ":
             history = []
 
-        if isinstance(text2,list):
+        if isinstance(text2, list):
             text2 = text2[0]
 
         completion, history = self.func(user=text2, history=history)
@@ -246,9 +344,14 @@ class LLMConvo(SimpleTextWidget2x2):
 
         if not isinstance(completion, list):
             completion = [completion]
-        hist_out = json.dumps(history)
+
+        #hist_out = list_to_hex_str(history)
+        #test = hex_str_to_list(hist_out)
+        #assert(test==history)
+        hist_out = history
         if not isinstance(hist_out, list):
             hist_out = [hist_out]
+
         return (hist_out, completion,)
 
 
@@ -259,6 +362,10 @@ class TextConcat(SimpleTextWidget2x1):
         super().__init__()
 
     def handler(self, history, text2):
+        if isinstance(history, list):
+            history = history[0]
+        if isinstance(text2, list):
+            text2 = [0]
         return (history + text2,)
 
 
@@ -269,4 +376,9 @@ class TextConcatNewLine(SimpleTextWidget2x1):
         super().__init__()
 
     def handler(self, history, text2):
+        # decompose lists to first element
+        if isinstance(history, list):
+            history = history[0]
+        if isinstance(text2, list):
+            text2 = [0]
         return (history + "\n\n" + text2,)
