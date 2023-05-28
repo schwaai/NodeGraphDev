@@ -201,6 +201,7 @@ class PromptExecutor:
             finally:
                 self.server.last_node_id = None
                 if self.server.client_id is not None:
+                    #todo: use this for feedback
                     self.server.send_sync("executing", { "node": None }, self.server.client_id)
 
         gc.collect()
