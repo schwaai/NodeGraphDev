@@ -14,12 +14,6 @@ for file in os.listdir(folder):
         module = importlib.import_module("custom_nodes.SWAIN." + file[:-3])
         NODE_CLASS_MAPPINGS.update(module.NODE_CLASS_MAPPINGS)
 
-
-
-#from custom_nodes.SWAIN.nlp import NODE_CLASS_MAPPINGS as NLP_NODE_CLASS_MAPPINGS
-
-
-
 # here we add the nodes from the SWAIN folder
 for k, v in NODE_CLASS_MAPPINGS.items():
     NODE_CLASS_MAPPINGS[k] = v
