@@ -88,7 +88,7 @@ class RequestInput:
             }),
             "overridden_value": ("STRING", {
                 "multiline": True,
-                "default": "prompt",
+                "default": "Hi, how are you doing? This is an API request. (for testing)",
             }), },
             "optional": {
                 "hidden_override": ("STRING", {

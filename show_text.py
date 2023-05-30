@@ -27,6 +27,9 @@ class ShowText:
     def notify(self, text):
         if isinstance(text, list):
             if len(text)>0:
+                if isinstance(text[0], list):
+                    if isinstance(text[0][0], dict):
+                        text = text[0]
                 if isinstance(text[0], dict):
                     text_d = list_dict_display_str(text)
                     text_r = text
@@ -34,6 +37,8 @@ class ShowText:
                     if len(text) == 1:
                         text_d = text
                         text_r = text[0]
+
+
 
         if isinstance(text, str):
             text_d = [text]
