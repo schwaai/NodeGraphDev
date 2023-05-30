@@ -42,6 +42,9 @@ def create_cors_middleware(allowed_origin: str):
         response.headers['Access-Control-Allow-Methods'] = 'POST, GET, DELETE, PUT, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         response.headers['Access-Control-Allow-Credentials'] = 'true'
+        # enable cors *
+        response.headers['Access-Control-Allow-Origin'] = '*'
+
         return response
 
     return cors_middleware
@@ -169,8 +172,49 @@ class PromptServer():
         async def get_prompt(request):
             return web.json_response(self.get_queue_info())
 
+        @routes.get("/widgetdefs")
+        async def get_widget_defs(request):
+            widget_defs = [
+                {
+                    "widgetId": "rationalNumberWidget",
+                    "name": "Rational Number",
+                    "type": "RATIONAL",
+                    "properties": {
+                        "numerator": 2,
+                        "denominator": 5
+                    },
+                    "render": """
+                        <div>
+                            <span>Rational Number:</span>
+                            <span>{numerator} / {denominator}</span>
+                        </div>
+                    """
+                },
+                {
+                    "widgetId": "errorWidget",
+                    "name": "Error Widget",
+                    "type": "ErrorWidget",
+                    "properties": {
+                        "errorMessage": "Something went wrong!"
+                    },
+                    "render": """
+                        <div>
+                            <span>Error Message:</span>
+                            <span>{errorMessage}</span>
+                        </div>
+                    """
+                }
+            ]
+
+            return web.json_response(widget_defs)
+
         @routes.get("/object_info")
         async def get_object_info(request):
+            """
+            hands off information about the nodes to the client
+            :param request:
+            :return:
+            """
             out = {}
             for x in nodes.NODE_CLASS_MAPPINGS:
                 obj_class = nodes.NODE_CLASS_MAPPINGS[x]
@@ -182,6 +226,8 @@ class PromptServer():
                 info['display_name'] = nodes.NODE_DISPLAY_NAME_MAPPINGS[x] if x in nodes.NODE_DISPLAY_NAME_MAPPINGS.keys() else x
                 info['description'] = ''
                 info['category'] = 'sd'
+                info['internal_state'] = obj_class.INTERNAL_STATE if hasattr(obj_class, 'INTERNAL_STATE') else ''
+                info['internal_state_display'] = obj_class.INTERNAL_STATE_DISPLAY if hasattr(obj_class, 'INTERNAL_STATE_DISPLAY') else ' '
                 if hasattr(obj_class, 'CATEGORY'):
                     info['category'] = obj_class.CATEGORY
                 out[x] = info
