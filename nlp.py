@@ -32,6 +32,7 @@ class SimpleTextWidget(abc.ABC, metaclass=WidgetMetaclass):
 
     CATEGORY = "text"
     RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("STRING",)
     FUNCTION = "handler"
 
     def __init__(self, func):
@@ -55,6 +56,7 @@ class SimpleTextWidget2x1(abc.ABC, metaclass=WidgetMetaclass):
 
     CATEGORY = "text"
     RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("STRING",)
     FUNCTION = "handler"
 
     def __init__(self):
@@ -68,11 +70,12 @@ class SimpleTextWidget2x1(abc.ABC, metaclass=WidgetMetaclass):
             },
             "optional": {
                 "text2": ("STRING", {"multiline": True}),
+                "role": (["assistant", "user"],),
             }
         }
 
     @abc.abstractmethod
-    def handler(self, history, text2):
+    def handler(self, history, role, text2=None):
         """All subclasses must provide a handler method"""
         pass
 
@@ -82,6 +85,7 @@ class SimpleTextWidget2x2(abc.ABC, metaclass=WidgetMetaclass):
 
     CATEGORY = "text"
     RETURN_TYPES = ("STRING", "STRING",)
+    RETURN_NAMES = ("History", "Result",)
     FUNCTION = "handler"
 
     def __init__(self):
@@ -94,11 +98,14 @@ class SimpleTextWidget2x2(abc.ABC, metaclass=WidgetMetaclass):
                 "history": ("STRING", {"multiline": True}),
                 "text2": ("STRING", {"multiline": True}),
             },
+            "optional": {
+                "role": (["assistant", "user"],),
+            }
 
         }
 
     @abc.abstractmethod
-    def handler(self, history, text2):
+    def handler(self, history, text2, role="user"):
         """All subclasses must provide a handler method"""
         pass
 
@@ -160,11 +167,11 @@ def get_openai_embedding(model, text):
     return embeddings_list
 
 
-def OAI_completion(user=None, agent=None, system=None, history: [{str: str}] = None):
+def OAI_completion(user=None, assistant=None, system=None, history: [{str: str}] = None):
     """
     OpenAI Completion API
     :param user: user input
-    :param agent: agent input
+    :param assistant: assistant input
     :param system: system input
     :param history: list of dicts with keys "role" and "content"
     :return: gpt_message, history
@@ -173,7 +180,7 @@ def OAI_completion(user=None, agent=None, system=None, history: [{str: str}] = N
         history = []
     if history == "":
         history = []
-    if isinstance(history,dict):
+    if isinstance(history, dict):
         history = [history]
     if not history:
         history = []
@@ -204,8 +211,8 @@ def OAI_completion(user=None, agent=None, system=None, history: [{str: str}] = N
 
     if user:
         history.append({"role": "user", "content": user})
-    if agent:
-        history.append({"role": "assistant", "content": agent})
+    if assistant:
+        history.append({"role": "assistant", "content": assistant})
     if system:
         history.append({"role": "system", "content": system})
 
@@ -271,10 +278,15 @@ class LLMCompletionPrepend(SimpleTextWidget2x1):
         self.server_string = server_obj_holder[0]["server_strings"]
         self.server_string[self.SSID] = []
 
-    def handler(self, history, text2):
+    def handler(self, history, role, text2=None):
         if history == "":
             return ("None",)
-        completion, history = self.func(user=history + text2)
+
+        if role == "user":
+            completion, history = self.func(user=history + text2)
+        elif role == "assistant":
+            completion, history = self.func(assistant=history + text2)
+
         self.server_string[self.SSID].append(completion)
 
         return (completion,)
@@ -314,7 +326,9 @@ class LLMConvo(SimpleTextWidget2x2):
         self.server_string = server_obj_holder[0]["server_strings"]
         self.server_string[self.SSID] = []
 
-    def handler(self, history, text2):
+    INTERNAL_STATE_DISPLAY = True
+
+    def handler(self, history, text2, role="user"):
         """
         text1 is the conversation history, text2 is the user input
         for the output the first return is the appended conversation and the second is the completion
@@ -339,20 +353,24 @@ class LLMConvo(SimpleTextWidget2x2):
         if isinstance(text2, list):
             text2 = text2[0]
 
-        completion, history = self.func(user=text2, history=history)
+        kwargs = {}
+        kwargs[role] = text2
+        kwargs["history"] = history
+        # completion, history = self.func(user=text2, history=history)
+        # completion, history = self.func(**kwargs, history=history)
+        completion, history = self.func(**kwargs)
+
         self.server_string[self.SSID].append(completion)
 
         if not isinstance(completion, list):
             completion = [completion]
 
-        #hist_out = list_to_hex_str(history)
-        #test = hex_str_to_list(hist_out)
-        #assert(test==history)
         hist_out = history
         if not isinstance(hist_out, list):
             hist_out = [hist_out]
 
-        return (hist_out, completion,)
+        ui_result = {"ui": {"text": [completion]}, "result": (hist_out, completion,)}
+        return ui_result
 
 
 class TextConcat(SimpleTextWidget2x1):
@@ -361,7 +379,7 @@ class TextConcat(SimpleTextWidget2x1):
     def __init__(self):
         super().__init__()
 
-    def handler(self, history, text2):
+    def handler(self, history, role, text2):
         if isinstance(history, list):
             history = history[0]
         if isinstance(text2, list):
@@ -375,7 +393,7 @@ class TextConcatNewLine(SimpleTextWidget2x1):
     def __init__(self):
         super().__init__()
 
-    def handler(self, history, text2):
+    def handler(self, history, role, text2):
         # decompose lists to first element
         if isinstance(history, list):
             history = history[0]
