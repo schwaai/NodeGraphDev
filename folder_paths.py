@@ -2,6 +2,7 @@ import os
 
 supported_ckpt_extensions = set(['.ckpt', '.pth', '.safetensors'])
 supported_pt_extensions = set(['.ckpt', '.pt', '.bin', '.pth', '.safetensors'])
+
 folder_names_and_paths = {}
 
 base_path = os.path.dirname(os.path.realpath(__file__))
@@ -17,8 +18,7 @@ folder_names_and_paths["style_models"] = ([os.path.join(models_dir, "style_model
 folder_names_and_paths["embeddings"] = ([os.path.join(models_dir, "embeddings")], supported_pt_extensions)
 folder_names_and_paths["diffusers"] = ([os.path.join(models_dir, "diffusers")], ["folder"])
 
-folder_names_and_paths["controlnet"] = (
-[os.path.join(models_dir, "controlnet"), os.path.join(models_dir, "t2i_adapter")], supported_pt_extensions)
+folder_names_and_paths["controlnet"] = ([os.path.join(models_dir, "controlnet"), os.path.join(models_dir, "t2i_adapter")], supported_pt_extensions)
 folder_names_and_paths["gligen"] = ([os.path.join(models_dir, "gligen")], supported_pt_extensions)
 
 folder_names_and_paths["upscale_models"] = ([os.path.join(models_dir, "upscale_models")], supported_pt_extensions)
@@ -64,6 +64,46 @@ def get_directory_by_type(type_name):
     return None
 
 
+# determine base_dir rely on annotation if name is 'filename.ext [annotation]' format
+# otherwise use default_path as base_dir
+def annotated_filepath(name):
+    if name.endswith("[output]"):
+        base_dir = get_output_directory()
+        name = name[:-9]
+    elif name.endswith("[input]"):
+        base_dir = get_input_directory()
+        name = name[:-8]
+    elif name.endswith("[temp]"):
+        base_dir = get_temp_directory()
+        name = name[:-7]
+    else:
+        return name, None
+
+    return name, base_dir
+
+
+def get_annotated_filepath(name, default_dir=None):
+    name, base_dir = annotated_filepath(name)
+
+    if base_dir is None:
+        if default_dir is not None:
+            base_dir = default_dir
+        else:
+            base_dir = get_input_directory()  # fallback path
+
+    return os.path.join(base_dir, name)
+
+
+def exists_annotated_filepath(name):
+    name, base_dir = annotated_filepath(name)
+
+    if base_dir is None:
+        base_dir = get_input_directory()  # fallback path
+
+    filepath = os.path.join(base_dir, name)
+    return os.path.exists(filepath)
+
+
 def add_model_folder_path(folder_name, full_folder_path):
     global folder_names_and_paths
     if folder_name in folder_names_and_paths:
@@ -72,14 +112,12 @@ def add_model_folder_path(folder_name, full_folder_path):
 def get_folder_paths(folder_name):
     return folder_names_and_paths[folder_name][0][:]
 
-    return
-
 def recursive_search(directory):
     result = []
     for root, subdir, file in os.walk(directory, followlinks=True):
         for filepath in file:
-            # we os.path,join directory with a blank string to generate a path separator at the end.
-            result.append(os.path.join(root, filepath).replace(os.path.join(directory, ''), ''))
+            #we os.path,join directory with a blank string to generate a path separator at the end.
+            result.append(os.path.join(root, filepath).replace(os.path.join(directory,''),''))
     return result
 
 def filter_files_extensions(files, extensions):
@@ -133,8 +171,7 @@ def get_save_image_path(filename_prefix, output_dir, image_width=0, image_height
         return {}
 
     try:
-        counter = max(filter(lambda a: a[1][:-1] == filename and a[1][-1] == "_",
-                             map(map_filename, os.listdir(full_output_folder))))[0] + 1
+        counter = max(filter(lambda a: a[1][:-1] == filename and a[1][-1] == "_", map(map_filename, os.listdir(full_output_folder))))[0] + 1
     except ValueError:
         counter = 1
     except FileNotFoundError:
