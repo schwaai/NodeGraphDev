@@ -231,6 +231,39 @@ class PromptServer():
                 if hasattr(obj_class, 'CATEGORY'):
                     info['category'] = obj_class.CATEGORY
                 out[x] = info
+        def node_info(node_class):
+            obj_class = nodes.NODE_CLASS_MAPPINGS[node_class]
+            info = {}
+            info['input'] = obj_class.INPUT_TYPES()
+            info['output'] = obj_class.RETURN_TYPES
+            info['output_is_list'] = obj_class.OUTPUT_IS_LIST if hasattr(obj_class, 'OUTPUT_IS_LIST') else [False] * len(obj_class.RETURN_TYPES)
+            info['output_name'] = obj_class.RETURN_NAMES if hasattr(obj_class, 'RETURN_NAMES') else info['output']
+            info['name'] = node_class
+            info['display_name'] = nodes.NODE_DISPLAY_NAME_MAPPINGS[node_class] if node_class in nodes.NODE_DISPLAY_NAME_MAPPINGS.keys() else node_class
+            info['description'] = ''
+            info['category'] = 'sd'
+            if hasattr(obj_class, 'OUTPUT_NODE') and obj_class.OUTPUT_NODE == True:
+                info['output_node'] = True
+            else:
+                info['output_node'] = False
+
+            if hasattr(obj_class, 'CATEGORY'):
+                info['category'] = obj_class.CATEGORY
+            return info
+
+        @routes.get("/object_info")
+        async def get_object_info(request):
+            out = {}
+            for x in nodes.NODE_CLASS_MAPPINGS:
+                out[x] = node_info(x)
+            return web.json_response(out)
+
+        @routes.get("/object_info/{node_class}")
+        async def get_object_info_node(request):
+            node_class = request.match_info.get("node_class", None)
+            out = {}
+            if (node_class is not None) and (node_class in nodes.NODE_CLASS_MAPPINGS):
+                out[node_class] = node_info(node_class)
             return web.json_response(out)
 
         @routes.get("/history")
@@ -278,13 +311,21 @@ class PromptServer():
                 if "client_id" in json_data:
                     extra_data["client_id"] = json_data["client_id"]
                 if valid[0]:
-                    self.prompt_queue.put((number, id(prompt), prompt, extra_data))
+                    prompt_id = str(uuid.uuid4())
+                    outputs_to_execute = valid[2]
+                    self.prompt_queue.put((number, prompt_id, prompt, extra_data, outputs_to_execute))
+                    return web.json_response({"prompt_id": prompt_id})
                 else:
                     resp_code = 400
                     out_string = valid[1]
                     print("invalid prompt:", valid[1])
+                    return web.json_response({"error": valid[1], "node_errors": valid[3]}, status=400)
+            else:
+                return web.json_response({"error": "no prompt", "node_errors": []}, status=400)
 
-            return web.Response(body=out_string, status=resp_code)
+            result2 = main.server_obj_holder[0]['last_exec_result']
+
+            return web.json_response(result2, status=200)
 
         @routes.post("/infer")
         async def post_infer(request):
@@ -318,10 +359,6 @@ class PromptServer():
             request.json = lambda: saved_request_json
             # now await the request to /exec
             result = await post_prompt(request)
-
-            result2 = main.server_obj_holder[0]['last_exec_result']
-
-            return web.json_response(result2, status=200)
         @routes.post("/queue")
         async def post_queue(request):
             json_data =  await request.json()

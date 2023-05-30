@@ -6,13 +6,14 @@ import json
 import hashlib
 import traceback
 
-from PIL import Image
+from PIL import Image, ImageOps
 from PIL.PngImagePlugin import PngInfo
 import numpy as np
+import safetensors.torch
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy"))
 
-import comfy.diffusers_convert
+import comfy.diffusers_load
 import comfy.samplers
 import comfy.sd
 import comfy.utils
@@ -211,6 +212,81 @@ class VAEEncodeForInpaint:
         return ({"samples": t, "noise_mask": (mask_erosion[0][:x, :y].round())},)
 
 
+
+class SaveLatent:
+    def __init__(self):
+        self.output_dir = folder_paths.get_output_directory()
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": { "samples": ("LATENT", ),
+                              "filename_prefix": ("STRING", {"default": "latents/ComfyUI"})},
+                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+                }
+    RETURN_TYPES = ()
+    FUNCTION = "save"
+
+    OUTPUT_NODE = True
+
+    CATEGORY = "_for_testing"
+
+    def save(self, samples, filename_prefix="ComfyUI", prompt=None, extra_pnginfo=None):
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir)
+
+        # support save metadata for latent sharing
+        prompt_info = ""
+        if prompt is not None:
+            prompt_info = json.dumps(prompt)
+
+        metadata = {"prompt": prompt_info}
+        if extra_pnginfo is not None:
+            for x in extra_pnginfo:
+                metadata[x] = json.dumps(extra_pnginfo[x])
+
+        file = f"{filename}_{counter:05}_.latent"
+        file = os.path.join(full_output_folder, file)
+
+        output = {}
+        output["latent_tensor"] = samples["samples"]
+
+        safetensors.torch.save_file(output, file, metadata=metadata)
+
+        return {}
+
+
+class LoadLatent:
+    @classmethod
+    def INPUT_TYPES(s):
+        input_dir = folder_paths.get_input_directory()
+        files = [f for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f)) and f.endswith(".latent")]
+        return {"required": {"latent": [sorted(files), ]}, }
+
+    CATEGORY = "_for_testing"
+
+    RETURN_TYPES = ("LATENT", )
+    FUNCTION = "load"
+
+    def load(self, latent):
+        latent_path = folder_paths.get_annotated_filepath(latent)
+        latent = safetensors.torch.load_file(latent_path, device="cpu")
+        samples = {"samples": latent["latent_tensor"].float()}
+        return (samples, )
+
+    @classmethod
+    def IS_CHANGED(s, latent):
+        image_path = folder_paths.get_annotated_filepath(latent)
+        m = hashlib.sha256()
+        with open(image_path, 'rb') as f:
+            m.update(f.read())
+        return m.digest().hex()
+
+    @classmethod
+    def VALIDATE_INPUTS(s, latent):
+        if not folder_paths.exists_annotated_filepath(latent):
+            return "Invalid latent file: {}".format(latent)
+        return True
+
+
 class CheckpointLoader:
     @classmethod
     def INPUT_TYPES(s):
@@ -278,7 +354,7 @@ class DiffusersLoader:
                     model_path = os.path.join(search_path, model_path)
                     break
 
-        return comfy.diffusers_convert.load_diffusers(model_path, fp16=comfy.model_management.should_use_fp16(),
+        return comfy.diffusers_load.load_diffusers(model_path, fp16=comfy.model_management.should_use_fp16(),
                                                       output_vae=output_vae, output_clip=output_clip,
                                                       embedding_directory=folder_paths.get_folder_paths("embeddings"))
 
@@ -336,6 +412,9 @@ class LoraLoader:
     CATEGORY = "loaders"
 
     def load_lora(self, model, clip, lora_name, strength_model, strength_clip):
+        if strength_model == 0 and strength_clip == 0:
+            return (model, clip)
+
         lora_path = folder_paths.get_full_path("loras", lora_name)
         model_lora, clip_lora = comfy.sd.load_lora_for_models(model, clip, lora_path, strength_model, strength_clip)
         return (model_lora, clip_lora)
@@ -424,6 +503,9 @@ class ControlNetApply:
     CATEGORY = "conditioning"
 
     def apply_controlnet(self, conditioning, control_net, image, strength):
+        if strength == 0:
+            return (conditioning, )
+
         c = []
         control_hint = image.movedim(-1, 1)
         print(control_hint.shape)
@@ -541,6 +623,9 @@ class unCLIPConditioning:
     CATEGORY = "conditioning"
 
     def apply_adm(self, conditioning, clip_vision_output, strength, noise_augmentation):
+        if strength == 0:
+            return (conditioning, )
+
         c = []
         for t in conditioning:
             o = t[1].copy()
@@ -575,7 +660,7 @@ class EmptyLatentImage:
 
 
 class LatentUpscale:
-    upscale_methods = ["nearest-exact", "bilinear", "area"]
+    upscale_methods = ["nearest-exact", "bilinear", "area", "bislerp"]
     crop_methods = ["disabled", "center"]
 
     @classmethod
@@ -594,7 +679,6 @@ class LatentUpscale:
         s = samples.copy()
         s["samples"] = comfy.utils.common_upscale(samples["samples"], width // 8, height // 8, upscale_method, crop)
         return (s,)
-
 
 class LatentRotate:
     @classmethod
@@ -928,40 +1012,7 @@ class SaveImage:
     CATEGORY = "image"
 
     def save_images(self, images, filename_prefix="ComfyUI", prompt=None, extra_pnginfo=None):
-        def map_filename(filename):
-            prefix_len = len(os.path.basename(filename_prefix))
-            prefix = filename[:prefix_len + 1]
-            try:
-                digits = int(filename[prefix_len + 1:].split('_')[0])
-            except:
-                digits = 0
-            return (digits, prefix)
-
-        def compute_vars(input):
-            input = input.replace("%width%", str(images[0].shape[1]))
-            input = input.replace("%height%", str(images[0].shape[0]))
-            return input
-
-        filename_prefix = compute_vars(filename_prefix)
-
-        subfolder = os.path.dirname(os.path.normpath(filename_prefix))
-        filename = os.path.basename(os.path.normpath(filename_prefix))
-
-        full_output_folder = os.path.join(self.output_dir, subfolder)
-
-        if os.path.commonpath((self.output_dir, os.path.abspath(full_output_folder))) != self.output_dir:
-            print("Saving image outside the output folder is not allowed.")
-            return {}
-
-        try:
-            counter = max(filter(lambda a: a[1][:-1] == filename and a[1][-1] == "_",
-                                 map(map_filename, os.listdir(full_output_folder))))[0] + 1
-        except ValueError:
-            counter = 1
-        except FileNotFoundError:
-            os.makedirs(full_output_folder, exist_ok=True)
-            counter = 1
-
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
         results = list()
         for image in images:
             i = 255. * image.cpu().numpy()
@@ -1059,6 +1110,7 @@ class LoadImageMask:
         input_dir = folder_paths.get_input_directory()
         image_path = os.path.join(input_dir, image)
         i = Image.open(image_path)
+        i = ImageOps.exif_transpose(i)
         if i.getbands() != ("R", "G", "B", "A"):
             i = i.convert("RGBA")
         mask = None
@@ -1228,6 +1280,9 @@ NODE_CLASS_MAPPINGS = {
     "unCLIPCheckpointLoader": unCLIPCheckpointLoader,
     "CheckpointLoader": CheckpointLoader,
     "DiffusersLoader": DiffusersLoader,
+
+    "LoadLatent": LoadLatent,
+    "SaveLatent": SaveLatent
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -1263,6 +1318,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LatentCrop": "Crop Latent",
     "EmptyLatentImage": "Empty Latent Image",
     "LatentUpscale": "Upscale Latent",
+    "LatentUpscaleBy": "Upscale Latent By",
     "LatentComposite": "Latent Composite",
     # Image
     "SaveImage": "Save Image",

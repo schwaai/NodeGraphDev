@@ -115,47 +115,55 @@ function addMultilineWidget(node, name, opts, app) {
         node.inputHeight = freeSpace;
     }
 
-    const widget = {
-        type: "customtext",
-        name,
-        get value() {
-            return this.inputEl.value;
-        },
-        set value(x) {
-            this.inputEl.value = x;
-        },
-        draw: function (ctx, _, widgetWidth, y, widgetHeight) {
-            if (!this.parent.inputHeight) {
-                // If we are initially offscreen when created we wont have received a resize event
-                // Calculate it here instead
-                computeSize(node.size);
-            }
-            const visible = app.canvas.ds.scale > 0.5 && this.type === "customtext";
-            const t = ctx.getTransform();
-            const margin = 10;
-            Object.assign(this.inputEl.style, {
-                left: `${t.a * margin + t.e}px`,
-                top: `${t.d * (y + widgetHeight - margin - 3) + t.f}px`,
-                width: `${(widgetWidth - margin * 2 - 3) * t.a}px`,
-                height: `${(this.parent.inputHeight - margin * 2 - 4) * t.d}px`,
-                position: "absolute",
-                zIndex: 1,
-                fontSize: `${t.d * 10.0}px`,
-            });
-            this.inputEl.hidden = !visible;
-        },
-    };
-    widget.inputEl = document.createElement("textarea");
-    widget.inputEl.className = "comfy-multiline-input";
-    widget.inputEl.value = opts.defaultVal;
-    widget.inputEl.placeholder = opts.placeholder || "";
-    document.addEventListener("mousedown", function (event) {
-        if (!widget.inputEl.contains(event.target)) {
-            widget.inputEl.blur();
-        }
-    });
-    widget.parent = node;
-    document.body.appendChild(widget.inputEl);
+	const widget = {
+		type: "customtext",
+		name,
+		get value() {
+			return this.inputEl.value;
+		},
+		set value(x) {
+			this.inputEl.value = x;
+		},
+		draw: function (ctx, _, widgetWidth, y, widgetHeight) {
+			if (!this.parent.inputHeight) {
+				// If we are initially offscreen when created we wont have received a resize event
+				// Calculate it here instead
+				computeSize(node.size);
+			}
+			const visible = app.canvas.ds.scale > 0.5 && this.type === "customtext";
+			const margin = 10;
+			const elRect = ctx.canvas.getBoundingClientRect();
+			const transform = new DOMMatrix()
+				.scaleSelf(elRect.width / ctx.canvas.width, elRect.height / ctx.canvas.height)
+				.multiplySelf(ctx.getTransform())
+				.translateSelf(margin, margin + y);
+
+			Object.assign(this.inputEl.style, {
+				transformOrigin: "0 0",
+				transform: transform,
+				left: "0px",
+				top: "0px",
+				width: `${widgetWidth - (margin * 2)}px`,
+				height: `${this.parent.inputHeight - (margin * 2)}px`,
+				position: "absolute",
+				background: (!node.color)?'':node.color,
+				color: (!node.color)?'':'white',
+				zIndex: app.graph._nodes.indexOf(node),
+			});
+			this.inputEl.hidden = !visible;
+		},
+	};
+	widget.inputEl = document.createElement("textarea");
+	widget.inputEl.className = "comfy-multiline-input";
+	widget.inputEl.value = opts.defaultVal;
+	widget.inputEl.placeholder = opts.placeholder || "";
+	document.addEventListener("mousedown", function (event) {
+		if (!widget.inputEl.contains(event.target)) {
+			widget.inputEl.blur();
+		}
+	});
+	widget.parent = node;
+	document.body.appendChild(widget.inputEl);
 
     node.addCustomWidget(widget);
 
