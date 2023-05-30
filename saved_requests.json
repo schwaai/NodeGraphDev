@@ -1,131 +1,70 @@
 {
   "last_exec": "{'client_id': 'a1a5871ef09b411380b47c8a8340eb8d', 'prompt': {'5': {'inputs': {'history': '', 'text2': ['26', 0]}, 'class_type': 'LLMConvo'}, '6': {'inputs': {'text': ['5', 0]}, 'class_type': 'ShowText'}, '9': {'inputs': {'text': ['5', 1]}, 'class_type': 'ShowText'}, '17': {'inputs': {'text': ['9', 0]}, 'class_type': 'ShowLastExecShowText'}, '22': {'inputs': {'key': 'result', 'value': ['9', 0]}, 'class_type': 'LastExecResultKVShowText'}, '26': {'inputs': {'key': 'prompt', 'overridden_value': 'Hi!'}, 'class_type': 'ClassRequestInputShowText'}}, 'extra_data': {'extra_pnginfo': {'workflow': {'last_node_id': 26, 'last_link_id': 29, 'nodes': [{'id': 9, 'type': 'ShowText', 'pos': [190, 550], 'size': {'0': 354.37579345703125, '1': 221.40895080566406}, 'flags': {}, 'order': 3, 'mode': 0, 'inputs': [{'name': 'text', 'type': 'STRING', 'link': 7}], 'outputs': [{'name': 'STRING', 'type': 'STRING', 'links': [23, 27], 'slot_index': 0}], 'properties': {'Node name for S&R': 'ShowText'}}, {'id': 5, 'type': 'LLMConvo', 'pos': [-230, 440], 'size': {'0': 400, '1': 200}, 'flags': {}, 'order': 1, 'mode': 0, 'inputs': [{'name': 'text2', 'type': 'STRING', 'link': 29, 'widget': {'name': 'text2', 'config': ['STRING', {'multiline': True}]}}], 'outputs': [{'name': 'STRING', 'type': 'STRING', 'links': [4], 'slot_index': 0}, {'name': 'STRING', 'type': 'STRING', 'links': [7], 'slot_index': 1}], 'properties': {'Node name for S&R': 'LLMConvo'}, 'widgets_values': ['', 'hi!!!!!']}, {'id': 6, 'type': 'ShowText', 'pos': [200, 270], 'size': {'0': 354.37579345703125, '1': 221.40895080566406}, 'flags': {}, 'order': 2, 'mode': 0, 'inputs': [{'name': 'text', 'type': 'STRING', 'link': 4}], 'outputs': [{'name': 'STRING', 'type': 'STRING', 'links': None}], 'properties': {'Node name for S&R': 'ShowText'}}, {'id': 22, 'type': 'LastExecResultKVShowText', 'pos': [648, 289], 'size': {'0': 284.8955993652344, '1': 206.53610229492188}, 'flags': {}, 'order': 5, 'mode': 0, 'inputs': [{'name': 'value', 'type': 'STRING', 'link': 27}], 'outputs': [{'name': 'STRING', 'type': 'STRING', 'links': None}], 'properties': {'Node name for S&R': 'LastExecResultKVShowText'}, 'widgets_values': ['result']}, {'id': 17, 'type': 'ShowLastExecShowText', 'pos': [632, 545], 'size': {'0': 314.78106689453125, '1': 205.10888671875}, 'flags': {}, 'order': 4, 'mode': 0, 'inputs': [{'name': 'text', 'type': 'STRING', 'link': 23}], 'outputs': [{'name': 'STRING', 'type': 'STRING', 'links': None}], 'properties': {'Node name for S&R': 'ShowLastExecShowText'}}, {'id': 26, 'type': 'ClassRequestInputShowText', 'pos': [-747, 441], 'size': {'0': 400, '1': 200}, 'flags': {}, 'order': 0, 'mode': 0, 'outputs': [{'name': 'STRING', 'type': 'STRING', 'links': [29], 'slot_index': 0}], 'properties': {'Node name for S&R': 'ClassRequestInputShowText'}, 'widgets_values': ['prompt', 'Hi!']}], 'links': [[4, 5, 0, 6, 0, 'STRING'], [7, 5, 1, 9, 0, 'STRING'], [23, 9, 0, 17, 0, 'STRING'], [27, 9, 0, 22, 0, 'STRING'], [29, 26, 0, 5, 0, 'STRING']], 'groups': [], 'config': {}, 'extra': {}, 'version': 0.4}}, 'client_id': 'a1a5871ef09b411380b47c8a8340eb8d'}}",
   "last_exec_json": {
-    "client_id": "a1a5871ef09b411380b47c8a8340eb8d",
+    "client_id": "3259e77f71f545f190cd4d1ead1f08a1",
     "prompt": {
-      "5": {
-        "inputs": {
-          "history": [
-            "31",
-            0
-          ],
-          "text2": [
-            "28",
-            0
-          ]
-        },
-        "class_type": "LLMConvo"
-      },
-      "6": {
-        "inputs": {
-          "text": [
-            "5",
-            0
-          ]
-        },
-        "class_type": "ShowText"
-      },
-      "9": {
-        "inputs": {
-          "text": [
-            "5",
-            1
-          ]
-        },
-        "class_type": "ShowText"
-      },
-      "22": {
-        "inputs": {
-          "key": "result",
-          "text": "Hello again! Is there anything you would like to talk about or ask me?",
-          "value": [
-            "9",
-            0
-          ]
-        },
-        "class_type": "LastExecResultKVShowText"
-      },
-      "27": {
-        "inputs": {
-          "text": "[object Object]",
-          "not_used": [
-            "9",
-            0
-          ]
-        },
-        "class_type": "ShowLastExecShowText"
-      },
-      "28": {
+      "1": {
         "inputs": {
           "key": "prompt",
-          "overridden_value": "HI!!!",
+          "overridden_value": "Hi, how are you doing? This is an API request. (for testing)",
           "hidden_override": "",
-          "text": "HI!!!"
+          "text": "Hi, how are you doing? This is an API request. (for testing)"
         },
         "class_type": "ClassRequestInputShowText"
       },
-      "29": {
+      "2": {
+        "inputs": {
+          "history": "undefined",
+          "text2": [
+            "1",
+            0
+          ],
+          "role": "user"
+        },
+        "class_type": "LLMConvo"
+      },
+      "3": {
         "inputs": {
           "text": [
-            "28",
+            "2",
             0
           ]
         },
         "class_type": "ShowText"
       },
-      "30": {
+      "4": {
         "inputs": {
-          "key": "history",
-          "text": "\"[{\\\"role\\\": \\\"user\\\", \\\"content\\\": \\\"HI!!\\\"}, {\\\"role\\\": \\\"assistant\\\", \\\"content\\\": \\\"Hello! How can I assist you today?\\\"}, {\\\"role\\\": \\\"user\\\", \\\"content\\\": \\\"HI!!!\\\"}, {\\\"role\\\": \\\"assistant\\\", \\\"content\\\": \\\"Hello again! Is there anything you would like to talk about or ask me?\\\"}]\"",
+          "key": "result",
+          "text": "[object Object]",
           "value": [
-            "6",
+            "3",
             0
           ]
         },
         "class_type": "LastExecResultKVShowText"
       },
-      "31": {
-        "inputs": {
-          "key": "history",
-          "overridden_value": "\"[\\\"role\\\": \\\"user\\\", \\\"content\\\": \\\"HI!!\\\", \\\"role\\\": \\\"assistant\\\", \\\"content\\\": \\\"Hello! How can I assist you today?\\\"]\"",
-          "hidden_override": "",
-          "text": "\"[\\\"role\\\": \\\"user\\\", \\\"content\\\": \\\"HI!!\\\", \\\"role\\\": \\\"assistant\\\", \\\"content\\\": \\\"Hello! How can I assist you today?\\\"]\""
-        },
-        "class_type": "ClassRequestInputShowText"
-      },
-      "32": {
+      "5": {
         "inputs": {
           "text": [
-            "31",
+            "4",
             0
           ]
         },
         "class_type": "ShowText"
       },
-      "33": {
+      "7": {
         "inputs": {
-          "history": [
-            "5",
-            0
-          ],
-          "text2": "hi!!!!!!!"
-        },
-        "class_type": "LLMConvo"
-      },
-      "34": {
-        "inputs": {
-          "text": "[object Object]",
           "not_used": [
-            "33",
-            1
+            "3",
+            0
           ]
         },
         "class_type": "ShowLastExecShowText"
       },
-      "36": {
+      "8": {
         "inputs": {
           "text": [
-            "33",
+            "7",
             0
           ]
         },
@@ -135,201 +74,15 @@
     "extra_data": {
       "extra_pnginfo": {
         "workflow": {
-          "last_node_id": 36,
-          "last_link_id": 38,
+          "last_node_id": 8,
+          "last_link_id": 6,
           "nodes": [
             {
-              "id": 9,
-              "type": "ShowText",
-              "pos": [
-                190,
-                550
-              ],
-              "size": {
-                "0": 354.37579345703125,
-                "1": 221.40895080566406
-              },
-              "flags": {},
-              "order": 7,
-              "mode": 0,
-              "inputs": [
-                {
-                  "name": "text",
-                  "type": "STRING",
-                  "link": 7
-                }
-              ],
-              "outputs": [
-                {
-                  "name": "STRING",
-                  "type": "STRING",
-                  "links": [
-                    27,
-                    30
-                  ],
-                  "slot_index": 0
-                }
-              ],
-              "properties": {
-                "Node name for S&R": "ShowText"
-              },
-              "widgets_values": [
-                "Hello again! Is there anything you would like to talk about or ask me?"
-              ]
-            },
-            {
-              "id": 6,
-              "type": "ShowText",
-              "pos": [
-                200,
-                270
-              ],
-              "size": {
-                "0": 354.37579345703125,
-                "1": 221.40895080566406
-              },
-              "flags": {},
-              "order": 5,
-              "mode": 0,
-              "inputs": [
-                {
-                  "name": "text",
-                  "type": "STRING",
-                  "link": 4
-                }
-              ],
-              "outputs": [
-                {
-                  "name": "STRING",
-                  "type": "STRING",
-                  "links": [
-                    33
-                  ],
-                  "slot_index": 0
-                }
-              ],
-              "properties": {
-                "Node name for S&R": "ShowText"
-              },
-              "widgets_values": [
-                "\"[{\\\"role\\\": \\\"user\\\", \\\"content\\\": \\\"HI!!\\\"}, {\\\"role\\\": \\\"assistant\\\", \\\"content\\\": \\\"Hello! How can I assist you today?\\\"}, {\\\"role\\\": \\\"user\\\", \\\"content\\\": \\\"HI!!!\\\"}, {\\\"role\\\": \\\"assistant\\\", \\\"content\\\": \\\"Hello again! Is there anything you would like to talk about or ask me?\\\"}]\""
-              ]
-            },
-            {
-              "id": 27,
-              "type": "ShowLastExecShowText",
-              "pos": [
-                648,
-                825
-              ],
-              "size": {
-                "0": 306.0000305175781,
-                "1": 209
-              },
-              "flags": {},
-              "order": 12,
-              "mode": 0,
-              "inputs": [
-                {
-                  "name": "not_used",
-                  "type": "STRING",
-                  "link": 30
-                }
-              ],
-              "outputs": [
-                {
-                  "name": "STRING",
-                  "type": "STRING",
-                  "links": null
-                }
-              ],
-              "properties": {
-                "Node name for S&R": "ShowLastExecShowText"
-              },
-              "widgets_values": [
-                "[object Object]"
-              ]
-            },
-            {
-              "id": 22,
-              "type": "LastExecResultKVShowText",
-              "pos": [
-                655,
-                554
-              ],
-              "size": {
-                "0": 284.8955993652344,
-                "1": 206.53610229492188
-              },
-              "flags": {},
-              "order": 11,
-              "mode": 0,
-              "inputs": [
-                {
-                  "name": "value",
-                  "type": "STRING",
-                  "link": 27
-                }
-              ],
-              "outputs": [
-                {
-                  "name": "STRING",
-                  "type": "STRING",
-                  "links": null
-                }
-              ],
-              "title": "Set Response Key result",
-              "properties": {
-                "Node name for S&R": "LastExecResultKVShowText"
-              },
-              "widgets_values": [
-                "result",
-                "Hello again! Is there anything you would like to talk about or ask me?"
-              ]
-            },
-            {
-              "id": 30,
-              "type": "LastExecResultKVShowText",
-              "pos": [
-                655,
-                273
-              ],
-              "size": {
-                "0": 284.8955993652344,
-                "1": 206.53610229492188
-              },
-              "flags": {},
-              "order": 8,
-              "mode": 0,
-              "inputs": [
-                {
-                  "name": "value",
-                  "type": "STRING",
-                  "link": 33
-                }
-              ],
-              "outputs": [
-                {
-                  "name": "STRING",
-                  "type": "STRING",
-                  "links": null
-                }
-              ],
-              "title": "Set Response Key history",
-              "properties": {
-                "Node name for S&R": "LastExecResultKVShowText"
-              },
-              "widgets_values": [
-                "history",
-                "\"[{\\\"role\\\": \\\"user\\\", \\\"content\\\": \\\"HI!!\\\"}, {\\\"role\\\": \\\"assistant\\\", \\\"content\\\": \\\"Hello! How can I assist you today?\\\"}, {\\\"role\\\": \\\"user\\\", \\\"content\\\": \\\"HI!!!\\\"}, {\\\"role\\\": \\\"assistant\\\", \\\"content\\\": \\\"Hello again! Is there anything you would like to talk about or ask me?\\\"}]\""
-              ]
-            },
-            {
-              "id": 28,
+              "id": 1,
               "type": "ClassRequestInputShowText",
               "pos": [
-                -1069,
-                286
+                550.5050048828125,
+                586.2626342773438
               ],
               "size": {
                 "0": 400,
@@ -343,8 +96,7 @@
                   "name": "STRING",
                   "type": "STRING",
                   "links": [
-                    31,
-                    32
+                    1
                   ],
                   "slot_index": 0
                 }
@@ -354,52 +106,17 @@
               },
               "widgets_values": [
                 "prompt",
-                "HI!!!",
+                "Hi, how are you doing? This is an API request. (for testing)",
                 "",
-                "HI!!!"
+                "Hi, how are you doing? This is an API request. (for testing)"
               ]
             },
             {
-              "id": 29,
-              "type": "ShowText",
+              "id": 2,
+              "type": "LLMConvo",
               "pos": [
-                -1058,
-                13
-              ],
-              "size": {
-                "0": 354.37579345703125,
-                "1": 221.40895080566406
-              },
-              "flags": {},
-              "order": 2,
-              "mode": 0,
-              "inputs": [
-                {
-                  "name": "text",
-                  "type": "STRING",
-                  "link": 32
-                }
-              ],
-              "outputs": [
-                {
-                  "name": "STRING",
-                  "type": "STRING",
-                  "links": null
-                }
-              ],
-              "properties": {
-                "Node name for S&R": "ShowText"
-              },
-              "widgets_values": [
-                "HI!!!"
-              ]
-            },
-            {
-              "id": 31,
-              "type": "ClassRequestInputShowText",
-              "pos": [
-                -1070,
-                530
+                987,
+                588
               ],
               "size": {
                 "0": 400,
@@ -408,81 +125,25 @@
               "flags": {},
               "order": 1,
               "mode": 0,
-              "outputs": [
-                {
-                  "name": "STRING",
-                  "type": "STRING",
-                  "links": [
-                    34,
-                    35
-                  ],
-                  "slot_index": 0
-                }
-              ],
-              "properties": {
-                "Node name for S&R": "ClassRequestInputShowText"
-              },
-              "widgets_values": [
-                "history",
-                "\"[\\\"role\\\": \\\"user\\\", \\\"content\\\": \\\"HI!!\\\", \\\"role\\\": \\\"assistant\\\", \\\"content\\\": \\\"Hello! How can I assist you today?\\\"]\"",
-                "",
-                "\"[\\\"role\\\": \\\"user\\\", \\\"content\\\": \\\"HI!!\\\", \\\"role\\\": \\\"assistant\\\", \\\"content\\\": \\\"Hello! How can I assist you today?\\\"]\""
-              ]
-            },
-            {
-              "id": 32,
-              "type": "ShowText",
-              "pos": [
-                -1048,
-                790
-              ],
-              "size": {
-                "0": 354.37579345703125,
-                "1": 221.40895080566406
-              },
-              "flags": {},
-              "order": 3,
-              "mode": 0,
               "inputs": [
                 {
-                  "name": "text",
+                  "name": "history",
                   "type": "STRING",
-                  "link": 34
-                }
-              ],
-              "outputs": [
-                {
-                  "name": "STRING",
-                  "type": "STRING",
-                  "links": null
-                }
-              ],
-              "properties": {
-                "Node name for S&R": "ShowText"
-              },
-              "widgets_values": [
-                "\"[\\\"role\\\": \\\"user\\\", \\\"content\\\": \\\"HI!!\\\", \\\"role\\\": \\\"assistant\\\", \\\"content\\\": \\\"Hello! How can I assist you today?\\\"]\""
-              ]
-            },
-            {
-              "id": 5,
-              "type": "LLMConvo",
-              "pos": [
-                -462,
-                429
-              ],
-              "size": {
-                "0": 400,
-                "1": 200
-              },
-              "flags": {},
-              "order": 4,
-              "mode": 0,
-              "inputs": [
+                  "link": null,
+                  "widget": {
+                    "name": "history",
+                    "config": [
+                      "STRING",
+                      {
+                        "multiline": true
+                      }
+                    ]
+                  }
+                },
                 {
                   "name": "text2",
                   "type": "STRING",
-                  "link": 31,
+                  "link": 1,
                   "widget": {
                     "name": "text2",
                     "config": [
@@ -492,145 +153,165 @@
                       }
                     ]
                   }
-                },
-                {
-                  "name": "history",
-                  "type": "STRING",
-                  "link": 35,
-                  "widget": {
-                    "name": "history",
-                    "config": [
-                      "STRING",
-                      {
-                        "multiline": true
-                      }
-                    ]
-                  }
                 }
               ],
               "outputs": [
                 {
-                  "name": "STRING",
+                  "name": "History",
                   "type": "STRING",
                   "links": [
-                    4,
-                    36
+                    2
                   ],
                   "slot_index": 0
                 },
                 {
-                  "name": "STRING",
-                  "type": "STRING",
-                  "links": [
-                    7
-                  ],
-                  "slot_index": 1
-                }
-              ],
-              "properties": {
-                "Node name for S&R": "LLMConvo"
-              },
-              "widgets_values": [
-                "",
-                "hi!!!!!"
-              ]
-            },
-            {
-              "id": 34,
-              "type": "ShowLastExecShowText",
-              "pos": [
-                251,
-                1151
-              ],
-              "size": {
-                "0": 306.0000305175781,
-                "1": 209
-              },
-              "flags": {},
-              "order": 10,
-              "mode": 0,
-              "inputs": [
-                {
-                  "name": "not_used",
-                  "type": "STRING",
-                  "link": 37
-                }
-              ],
-              "outputs": [
-                {
-                  "name": "STRING",
+                  "name": "Result",
                   "type": "STRING",
                   "links": null
                 }
               ],
               "properties": {
-                "Node name for S&R": "ShowLastExecShowText"
+                "Node name for S&R": "LLMConvo"
               },
               "widgets_values": [
+                "",
+                "",
+                "user"
+              ]
+            },
+            {
+              "id": 4,
+              "type": "LastExecResultKVShowText",
+              "pos": [
+                1211,
+                868
+              ],
+              "size": [
+                442.959150834517,
+                175.23139814897013
+              ],
+              "flags": {},
+              "order": 3,
+              "mode": 0,
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "STRING",
+                  "link": 3
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "STRING",
+                  "type": "STRING",
+                  "links": [
+                    4
+                  ],
+                  "slot_index": 0
+                }
+              ],
+              "properties": {
+                "Node name for S&R": "LastExecResultKVShowText"
+              },
+              "widgets_values": [
+                "result",
                 "[object Object]"
               ]
             },
             {
-              "id": 36,
+              "id": 5,
               "type": "ShowText",
               "pos": [
-                269,
-                865
+                1130,
+                1106
               ],
-              "size": {
-                "0": 354.37579345703125,
-                "1": 221.40895080566406
-              },
+              "size": [
+                595.8600075461648,
+                169.46284346147013
+              ],
               "flags": {},
-              "order": 9,
+              "order": 5,
               "mode": 0,
               "inputs": [
                 {
                   "name": "text",
                   "type": "STRING",
-                  "link": 38
+                  "link": 4
                 }
               ],
               "outputs": [
                 {
-                  "name": "STRING",
+                  "name": "STRING_OUT",
                   "type": "STRING",
-                  "links": [],
+                  "links": null
+                }
+              ],
+              "properties": {
+                "Node name for S&R": "ShowText"
+              },
+              "widgets_values": [
+                "user: Hi, how are you doing? This is an API request. (for testing)"
+              ]
+            },
+            {
+              "id": 3,
+              "type": "ShowText",
+              "pos": [
+                1431,
+                601
+              ],
+              "size": [
+                307.3888827237215,
+                211.11573097922587
+              ],
+              "flags": {},
+              "order": 2,
+              "mode": 0,
+              "inputs": [
+                {
+                  "name": "text",
+                  "type": "STRING",
+                  "link": 2
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "STRING_OUT",
+                  "type": "STRING",
+                  "links": [
+                    3,
+                    5
+                  ],
                   "slot_index": 0
                 }
               ],
               "properties": {
                 "Node name for S&R": "ShowText"
-              }
+              },
+              "widgets_values": [
+                "user: Hi, how are you doing? This is an API request. (for testing)",
+                "assistant: As an AI language model, I don't have the ability to feel emotions, but I am fully functional and ready to assist you with your API request. Please let me know how I can help."
+              ]
             },
             {
-              "id": 33,
-              "type": "LLMConvo",
+              "id": 7,
+              "type": "ShowLastExecShowText",
               "pos": [
-                -149,
-                849
+                1880.4058726917613,
+                607.6939697265625
               ],
-              "size": [
-                400,
-                200
-              ],
+              "size": {
+                "0": 210,
+                "1": 26
+              },
               "flags": {},
-              "order": 6,
+              "order": 4,
               "mode": 0,
               "inputs": [
                 {
-                  "name": "history",
+                  "name": "not_used",
                   "type": "STRING",
-                  "link": 36,
-                  "widget": {
-                    "name": "history",
-                    "config": [
-                      "STRING",
-                      {
-                        "multiline": true
-                      }
-                    ]
-                  }
+                  "link": 5
                 }
               ],
               "outputs": [
@@ -638,122 +319,94 @@
                   "name": "STRING",
                   "type": "STRING",
                   "links": [
-                    38
+                    6
                   ],
                   "slot_index": 0
-                },
-                {
-                  "name": "STRING",
-                  "type": "STRING",
-                  "links": [
-                    37
-                  ],
-                  "slot_index": 1
                 }
               ],
               "properties": {
-                "Node name for S&R": "LLMConvo"
+                "Node name for S&R": "ShowLastExecShowText"
+              }
+            },
+            {
+              "id": 8,
+              "type": "ShowText",
+              "pos": [
+                1857,
+                760
+              ],
+              "size": {
+                "0": 210,
+                "1": 26
               },
-              "widgets_values": [
-                "",
-                "hi!!!!!!!"
-              ]
+              "flags": {},
+              "order": 6,
+              "mode": 0,
+              "inputs": [
+                {
+                  "name": "text",
+                  "type": "STRING",
+                  "link": 6
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "STRING_OUT",
+                  "type": "STRING",
+                  "links": null
+                }
+              ],
+              "properties": {
+                "Node name for S&R": "ShowText"
+              }
             }
           ],
           "links": [
             [
+              1,
+              1,
+              0,
+              2,
+              1,
+              "STRING"
+            ],
+            [
+              2,
+              2,
+              0,
+              3,
+              0,
+              "STRING"
+            ],
+            [
+              3,
+              3,
+              0,
               4,
-              5,
-              0,
-              6,
               0,
               "STRING"
             ],
             [
+              4,
+              4,
+              0,
+              5,
+              0,
+              "STRING"
+            ],
+            [
+              5,
+              3,
+              0,
               7,
-              5,
-              1,
-              9,
               0,
               "STRING"
             ],
             [
-              27,
-              9,
-              0,
-              22,
-              0,
-              "STRING"
-            ],
-            [
-              30,
-              9,
-              0,
-              27,
-              0,
-              "STRING"
-            ],
-            [
-              31,
-              28,
-              0,
-              5,
-              0,
-              "STRING"
-            ],
-            [
-              32,
-              28,
-              0,
-              29,
-              0,
-              "STRING"
-            ],
-            [
-              33,
               6,
+              7,
               0,
-              30,
-              0,
-              "STRING"
-            ],
-            [
-              34,
-              31,
-              0,
-              32,
-              0,
-              "STRING"
-            ],
-            [
-              35,
-              31,
-              0,
-              5,
-              1,
-              "STRING"
-            ],
-            [
-              36,
-              5,
-              0,
-              33,
-              0,
-              "STRING"
-            ],
-            [
-              37,
-              33,
-              1,
-              34,
-              0,
-              "STRING"
-            ],
-            [
-              38,
-              33,
-              0,
-              36,
+              8,
               0,
               "STRING"
             ]
@@ -764,7 +417,7 @@
           "version": 0.4
         }
       },
-      "client_id": "a1a5871ef09b411380b47c8a8340eb8d"
+      "client_id": "3259e77f71f545f190cd4d1ead1f08a1"
     }
   }
 }
