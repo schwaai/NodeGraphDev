@@ -25,40 +25,34 @@ class ShowText:
     CATEGORY = "utils"
 
     def notify(self, text):
-        if isinstance(text, list):
-            if len(text)>0:
-                if isinstance(text[0], list):
-                    if isinstance(text[0][0], dict):
-                        text = text[0]
-                if isinstance(text[0], dict):
-                    text_d = list_dict_display_str(text)
-                    text_r = text
-                elif isinstance(text[0], str):
-                    if len(text) == 1:
-                        text_d = text
-                        text_r = text[0]
+        """
+        input is text : List[List[str]]
+        Returns a dict to be displayed by the UI and passed to the next function
+        output like ret["ui"]["text"] needs to be a list of strings
+        output like ret["result"] should mirror the input
 
+        >>> notify([["Hello", "world"], ["How", "are", "you?"]])
+        {'ui': {'text': ["Hello", "world", "How", "are", "you?"]}, 'result': [["Hello", "world"], ["How", "are", "you?"]]}
 
+        >>> notify([])
+        {'ui': {'text': []}, 'result': []}
+        """
 
-        if isinstance(text, str):
-            text_d = [text]
-            text_r = text
+        if not isinstance(text, list):
+            raise TypeError('Input should be a list of list of strings')
 
-        if isinstance(text, dict):
-            text_d = list_dict_display_str([text])
-            text_r = text
+        flat_text = []
+        for sublist in text:
+            if not isinstance(sublist, list):
+                raise ValueError('All elements in the list should be list of strings')
+            for item in sublist:
+                if not isinstance(item, str):
+                    raise ValueError('All elements in the sublists should be strings')
+                flat_text.append(item)
 
-        # try to decode the input to see if it is hex encoded
-        try:
-            clipped = text_r[2:-1]
-            dehexed = binascii.unhexlify(clipped)
-            text_r = json.loads(dehexed)
-            text_r = json.loads(dehexed)
-            text_d = list_dict_display_str(text_r)
-        except:
-            pass
+        ret = {"ui": {"text": flat_text}, "result": text}
+        return ret
 
-        return {"ui": {"text": text_d}, "result": (text_r,)}
 
 NODE_CLASS_MAPPINGS = {
     "ShowText": ShowText,
