@@ -9,7 +9,7 @@ app.registerExtension({
 		app.ui.settings.addSetting({
 			id: "Comfy.SnapToGrid.GridSize",
 			name: "Grid Size",
-			type: "slider",
+			type: "number",
 			attrs: {
 				min: 1,
 				max: 500,

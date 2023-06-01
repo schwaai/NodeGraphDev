@@ -266,20 +266,15 @@ def get_autocast_device(dev):
 
 
 def xformers_enabled():
-    c_dev_lower = torch.cuda.get_device_properties("cuda").name.lower()
     global xpu_available
     global directml_enabled
     if vram_state == VRAMState.CPU:
         return False
     if xpu_available:
         return False
-    if "amd" in c_dev_lower or "radeon" in c_dev_lower:
-        return False
     if directml_enabled:
         return False
-    if torch.cuda.get_device_properties("cuda").name == "AMD":
-        return False
-    return XFORMERS_IS_AVAILBLE
+    return XFORMERS_IS_AVAILABLE
 
 
 def xformers_enabled_vae():
@@ -370,12 +365,6 @@ def should_use_fp16():
 
     props = torch.cuda.get_device_properties("cuda")
     if props.major < 7:
-        return False
-    
-    if "AMD" in props.name:
-        return False
-
-    if "AMD" in props.name:
         return False
 
     #FP32 is faster on those cards?

@@ -1,14 +1,7 @@
 import os
 
-supported_ckpt_extensions = set(['.ckpt', '.pth'])
-supported_pt_extensions = set(['.ckpt', '.pt', '.bin', '.pth'])
-try:
-    import safetensors.torch
-    supported_ckpt_extensions.add('.safetensors')
-    supported_pt_extensions.add('.safetensors')
-except:
-    print("Could not import safetensors, safetensors support disabled.")
-
+supported_ckpt_extensions = set(['.ckpt', '.pth', '.safetensors'])
+supported_pt_extensions = set(['.ckpt', '.pt', '.bin', '.pth', '.safetensors'])
 
 folder_names_and_paths = {}
 
@@ -37,6 +30,8 @@ folder_names_and_paths["hypernetworks"] = ([os.path.join(models_dir, "hypernetwo
 output_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), "output")
 temp_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
 input_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), "input")
+server_state_json = os.path.join(os.path.dirname(os.path.realpath(__file__)), "server_state.json")
+saved_requests_json = os.path.join(os.path.dirname(os.path.realpath(__file__)), "saved_requests.json")
 
 if not os.path.exists(input_directory):
     os.makedirs(input_directory)
@@ -133,11 +128,13 @@ def filter_files_extensions(files, extensions):
 def get_full_path(folder_name, filename):
     global folder_names_and_paths
     folders = folder_names_and_paths[folder_name]
+    filename = os.path.relpath(os.path.join("/", filename), "/")
     for x in folders[0]:
         full_path = os.path.join(x, filename)
         if os.path.isfile(full_path):
             return full_path
 
+    return None
 
 def get_filename_list(folder_name):
     global folder_names_and_paths
@@ -147,4 +144,37 @@ def get_filename_list(folder_name):
         output_list.update(filter_files_extensions(recursive_search(x), folders[1]))
     return sorted(list(output_list))
 
+def get_save_image_path(filename_prefix, output_dir, image_width=0, image_height=0):
+    def map_filename(filename):
+        prefix_len = len(os.path.basename(filename_prefix))
+        prefix = filename[:prefix_len + 1]
+        try:
+            digits = int(filename[prefix_len + 1:].split('_')[0])
+        except:
+            digits = 0
+        return (digits, prefix)
 
+    def compute_vars(input, image_width, image_height):
+        input = input.replace("%width%", str(image_width))
+        input = input.replace("%height%", str(image_height))
+        return input
+
+    filename_prefix = compute_vars(filename_prefix, image_width, image_height)
+
+    subfolder = os.path.dirname(os.path.normpath(filename_prefix))
+    filename = os.path.basename(os.path.normpath(filename_prefix))
+
+    full_output_folder = os.path.join(output_dir, subfolder)
+
+    if os.path.commonpath((output_dir, os.path.abspath(full_output_folder))) != output_dir:
+        print("Saving image outside the output folder is not allowed.")
+        return {}
+
+    try:
+        counter = max(filter(lambda a: a[1][:-1] == filename and a[1][-1] == "_", map(map_filename, os.listdir(full_output_folder))))[0] + 1
+    except ValueError:
+        counter = 1
+    except FileNotFoundError:
+        os.makedirs(full_output_folder, exist_ok=True)
+        counter = 1
+    return full_output_folder, filename, counter, subfolder, filename_prefix
