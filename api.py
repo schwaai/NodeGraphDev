@@ -1,11 +1,12 @@
 import folder_paths
 import server_utils
-from custom_nodes.SWAIN.bases import ret_type
-from custom_nodes.SWAIN.shared import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
-from custom_nodes.SWAIN import bases
+
+from custom_nodes.SWAIN.bases import *
 
 
-class APITextWidget(bases.BaseSimpleTextWidget):
+
+
+class APITextWidget(BaseSimpleTextWidget):
     CATEGORY = "api"
 
 
@@ -14,7 +15,7 @@ class ShowLastExec(APITextWidget):
 
     @classmethod
     def INPUT_TYPES(cls):
-        return cls.required(cls._text)
+        return required(wg_text)
 
     def handler(self, text: str):
         import main
@@ -30,17 +31,17 @@ class ShowLastExec(APITextWidget):
 
 
 class LastExecResultKV(APITextWidget):
-    DISPLAY_NAME = "Last Exec's Result's KV pairs"
+    DISPLAY_NAME = "Set Api result KV"
 
     @classmethod
     def INPUT_TYPES(cls):
-        return cls.required(cls.both(cls._key, cls._text))
+        return required(both(wg_key, wg_text))
 
     def handler(self, key: str, text: str):
         import main
-        key = key[0]
-        value = text[0]
-        main.server_obj_holder[0]["last_exec_result"] = {key: value}
+
+        value = text
+        main.server_obj_holder[0]["last_exec_result"][key] = value
         text = [value]
         ret = {"ui": {"text": text}, "result": (text,)}
         return ret
@@ -49,36 +50,28 @@ class LastExecResultKV(APITextWidget):
 class RequestInput(APITextWidget):
     DISPLAY_NAME = "Requests Input Json"
 
-    _hidden_override = {"hidden_override": ("STRING", {"optional": True, "default": None})}
+    #_hidden_override = {"hidden_override": ("STRING", {"optional": True, "default": None})}
 
     @classmethod
     def INPUT_TYPES(cls):
-        ret = cls.both(cls.required(cls.both(cls._key, cls._overridden_value)),
-                       cls.optional(cls._hidden_override))
+        ret = both(required(both(wg_key, wg_overridden_value)),
+                       optional(wg_hidden))
         return ret
 
-    def handler(self, key: str, overridden_value: str, hidden_override: str = None):
+    def handler(self, key: str, overridden_value: str, hidden: str = None):
         import main
-        if hidden_override == [""]:
-            hidden_override = None
+        to_process = overridden_value
+        if hidden == "":
+            hidden = None
 
-        if hidden_override == "":
-            hidden_override = None
+        if hidden is not None: # if this has been set, then we want to process this value instead
+            to_process = hidden
+            hidden = None
 
-        if hidden_override is not None:
-            overridden_value = hidden_override
-            hidden_override = None
 
-        if isinstance(key, list):
-            key = key[0]
+        #main.server_obj_holder[0]["last_exec_result"] = {key: overridden_value}
 
-        if isinstance(overridden_value, list):
-            overridden_value = overridden_value[0]
+        text = to_process
 
-        main.server_obj_holder[0]["last_exec_result"] = {key: overridden_value}
-
-        if not isinstance(overridden_value, list):
-            text = [overridden_value]
-
-        ret = {"ui": {"text": text}, "result": (text,)}
+        ret = {"ui": {"text": [text]}, "result": (text,)}
         return ret

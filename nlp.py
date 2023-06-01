@@ -5,7 +5,7 @@ from warnings import warn
 import openai
 import time
 
-from custom_nodes.SWAIN.bases import BaseSimpleTextWidget, WidgetMetaclass
+from custom_nodes.SWAIN.bases import *
 
 
 class Config:
@@ -27,7 +27,7 @@ class SimpleTextWidget(BaseSimpleTextWidget):
 
     @classmethod
     def INPUT_TYPES(cls):
-        use = cls.required(cls._text)
+        use = required(wg_text)
         return use
 
     def handler(self, text):
@@ -38,7 +38,7 @@ class SimpleTextWidget(BaseSimpleTextWidget):
 class SimpleTextWidget2x1(BaseSimpleTextWidget):
     @classmethod
     def INPUT_TYPES(cls):
-        use = cls.both(cls.required(cls._history), cls.optional(cls.both(cls._text2, cls._role)))
+        use = both(required(wg_history), optional(both(wg_text2, wg_role)))
         return use
 
     def handler(self, history, role, text2=None):
@@ -47,12 +47,12 @@ class SimpleTextWidget2x1(BaseSimpleTextWidget):
 
 
 class SimpleTextWidget2x2(BaseSimpleTextWidget):
-    RETURN_TYPES = ("STRING", "STRING",)
+    RETURN_TYPES = (ret_type(wg_text),ret_type(wg_text))
     RETURN_NAMES = ("History", "Result",)
 
     @classmethod
     def INPUT_TYPES(cls):
-        use = cls.both(cls.required(cls.both(cls._history, cls._text2)), cls.optional(cls._role))
+        use = both(required(both(wg_history, wg_text2)), optional(wg_role))
         return use
 
     def handler(self, history, text2, role="user"):
@@ -144,7 +144,7 @@ def OAI_completion(user=None, assistant=None, system=None, history: [{str: str}]
                 print(f"invalid history: {history} attempting reconstruction")
                 try:
                     if isinstance(history, list):
-                        history = eval(history[0])
+                        history = eval(history)
 
                     trimmed = history.replace("[", '').replace("]", '')
                     dqd = trimmed.replace("'", '').replace('"', '')
@@ -209,7 +209,7 @@ class LLMCompletion(SimpleTextWidget):
 
     @classmethod
     def INPUT_TYPES(cls):
-        use = cls.required(cls._text)
+        use = required(wg_text)
         return use
 
     def handler(self, text):
@@ -235,7 +235,7 @@ class LLMCompletionPrepend(SimpleTextWidget2x1):
 
     @classmethod
     def INPUT_TYPES(cls):
-        use = cls.both(cls.required(cls._history), cls.optional(cls.both(cls._text2, cls._role)))
+        use = both(required(wg_history), optional(both(wg_text2, wg_role)))
         return use
 
     def handler(self, history, role, text2=None):
@@ -256,7 +256,7 @@ class LLMConvo(SimpleTextWidget2x2):
     """Uses the input text to call the specified LLM model and returns the output string"""
 
 
-    RETURN_TYPES = (ret_type(), "STRING",)
+    RETURN_TYPES = (ret_type(wg_text),ret_type(wg_text),)
 
     def __init__(self):
         self.func = OAI_completion
@@ -272,7 +272,7 @@ class LLMConvo(SimpleTextWidget2x2):
 
     @classmethod
     def INPUT_TYPES(cls):
-        use = cls.both(cls.required(cls.both(cls._history, cls._text2)), cls.optional(cls._role))
+        use = both(required(both(wg_history, wg_text2)), optional(wg_role))
         return use
 
     def handler(self, history, text2, role="user"):
@@ -288,7 +288,7 @@ class LLMConvo(SimpleTextWidget2x2):
             pass
 
         try:
-            dehexed = binascii.unhexlify(history[0][2:-1])
+            dehexed = binascii.unhexlify(history[2:-1])
             history = json.loads(dehexed)
 
         except:
@@ -296,9 +296,6 @@ class LLMConvo(SimpleTextWidget2x2):
 
         if history == "" or history == " ":
             history = []
-
-        if isinstance(text2, list):
-            text2 = text2[0]
 
         kwargs = {}
         kwargs[role] = text2
@@ -328,14 +325,10 @@ class TextConcat(SimpleTextWidget2x1):
 
     @classmethod
     def INPUT_TYPES(cls):
-        use = cls.both(cls.required(cls._history), cls.optional(cls._text2))
+        use = both(required(wg_history), optional(wg_text2))
         return use
 
     def handler(self, history, role, text2):
-        if isinstance(history, list):
-            history = history[0]
-        if isinstance(text2, list):
-            text2 = [0]
         return (history + text2,)
 
 
@@ -348,13 +341,9 @@ class TextConcatNewLine(SimpleTextWidget2x1):
 
     @classmethod
     def INPUT_TYPES(cls):
-        use = cls.both(cls.required(cls._history), cls.optional(cls._text2))
+        use = both(required(wg_history), optional(wg_text2))
         return use
 
     def handler(self, history, role, text2):
         # decompose lists to first element
-        if isinstance(history, list):
-            history = history[0]
-        if isinstance(text2, list):
-            text2 = [0]
         return (history + "\n\n" + text2,)
