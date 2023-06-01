@@ -446,7 +446,9 @@ class ExecQueue:
             out = []
             for x in self.currently_running.values():
                 out += [x]
-            return (out, copy.deepcopy(self.queue))
+            #return (out, copy.deepcopy(self.queue))
+            #return (out, copy.copy(self.queue))
+            return (out, self.queue)
 
     def get_tasks_remaining(self):
         with self.mutex:
