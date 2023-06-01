@@ -312,10 +312,6 @@ class ExecServer():
             queue_info['queue_pending'] = current_queue[1]
             return web.json_response(queue_info)
 
-
-
-
-
         @routes.post("/exec")
         async def post_prompt(request):
 
@@ -365,7 +361,7 @@ class ExecServer():
             load a request and run it on /exec (post_prompt)
             """
             # get the graphs name from the request
-            json_data:dict = await request.json()
+            json_data: dict = await request.json()
             graph_name = json_data.pop("graph_name", None)
 
             # get the servers saved graph from the saved json file
@@ -378,23 +374,25 @@ class ExecServer():
                     json.dump(saved_requests, f)
 
             saved_request_json = saved_requests[graph_name]
-            inputs_to_override=[]
-            for source_k,source_v in json_data.items():
+
+            # override the inputs in the saved graph with the inputs from the request
+            inputs_to_override = []
+            for source_k, source_v in json_data.items():
                 for target_k, target_v in saved_request_json["prompt"].items():
                     if "class_type" in target_v:
-                        if target_v["class_type"] == "ClassRequestInputShowText":
+                        if target_v["class_type"] == "RequestInput":
                             if source_k == target_v["inputs"]["key"]:
-                                target_v["inputs"]["hidden_override"] = source_v
-
-
+                                target_v["inputs"]["hidden"] = source_v
 
             request.json = lambda: saved_request_json
+
             # now await the request to /exec
             result = await post_prompt(request)
 
             result2 = main.server_obj_holder[0]['last_exec_result']
 
             return web.json_response(result2, status=200)
+
         @routes.post("/queue")
         async def post_queue(request):
             json_data = await request.json()
