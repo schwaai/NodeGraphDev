@@ -15,7 +15,6 @@ app.registerExtension({
 				const filter = document.createElement("input");
 				Object.assign(filter.style, {
 					width: "calc(100% - 10px)",
-					border: "0",
 					boxSizing: "border-box",
 					background: "#333",
 					border: "1px solid #999",

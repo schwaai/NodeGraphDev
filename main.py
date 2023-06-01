@@ -9,7 +9,9 @@ import comfy.utils
 
 if os.name == "nt":
     import logging
-    logging.getLogger("xformers").addFilter(lambda record: 'A matching Triton is not available' not in record.getMessage())
+
+    logging.getLogger("xformers").addFilter(
+        lambda record: 'A matching Triton is not available' not in record.getMessage())
 
 if __name__ == "__main__":
     if args.dont_upcast_attention:
@@ -19,7 +21,6 @@ if __name__ == "__main__":
     if args.cuda_device is not None:
         os.environ['CUDA_VISIBLE_DEVICES'] = str(args.cuda_device)
         print("Set cuda device to:", args.cuda_device)
-
 
 import yaml
 
@@ -40,18 +41,23 @@ def prompt_worker(q, server):
             if i == 0:
                 time.sleep(.02)
 
+
 async def run(server, address='', port=8188, verbose=True, call_on_start=None):
     await asyncio.gather(server.start(address, port, verbose, call_on_start), server.publish_loop())
 
+
 def hijack_progress(server):
     def hook(value, total):
-        server.send_sync("progress", { "value": value, "max": total}, server.client_id)
+        server.send_sync("progress", {"value": value, "max": total}, server.client_id)
+
     comfy.utils.set_progress_bar_global_hook(hook)
+
 
 def cleanup_temp():
     temp_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
     if os.path.exists(temp_dir):
         shutil.rmtree(temp_dir, ignore_errors=True)
+
 
 def load_extra_path_config(yaml_path):
     with open(yaml_path, 'r') as stream:
@@ -74,14 +80,15 @@ def load_extra_path_config(yaml_path):
                 folder_paths.add_model_folder_path(x, full_path)
 
 
-server_obj_holder = [{"server_strings":{}}]
+main_queue = None
+server_obj_holder = [{"server_strings": {}, "executed": {}}]
 if __name__ == "__main__":
     cleanup_temp()
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     server = server.PromptServer(loop)
-    q = execution.PromptQueue(server)
+    main_queue = execution.PromptQueue(server)
 
     extra_model_paths_config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "extra_model_paths.yaml")
     if os.path.isfile(extra_model_paths_config_path):
@@ -95,7 +102,7 @@ if __name__ == "__main__":
     server.add_routes()
     hijack_progress(server)
 
-    threading.Thread(target=prompt_worker, daemon=True, args=(q,server,)).start()
+    threading.Thread(target=prompt_worker, daemon=True, args=(main_queue, server,)).start()
 
     if args.output_directory:
         output_dir = os.path.abspath(args.output_directory)
@@ -110,14 +117,18 @@ if __name__ == "__main__":
         def startup_server(address, port):
             import webbrowser
             webbrowser.open("http://{}:{}".format(address, port))
+
+
         call_on_start = startup_server
 
     if os.name == "nt":
         try:
-            loop.run_until_complete(run(server, address=args.listen, port=args.port, verbose=not args.dont_print_server, call_on_start=call_on_start))
+            loop.run_until_complete(run(server, address=args.listen, port=args.port, verbose=not args.dont_print_server,
+                                        call_on_start=call_on_start))
         except KeyboardInterrupt:
             pass
     else:
-        loop.run_until_complete(run(server, address=args.listen, port=args.port, verbose=not args.dont_print_server, call_on_start=call_on_start))
+        loop.run_until_complete(run(server, address=args.listen, port=args.port, verbose=not args.dont_print_server,
+                                    call_on_start=call_on_start))
 
     cleanup_temp()

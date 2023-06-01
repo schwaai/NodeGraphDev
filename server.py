@@ -1,6 +1,8 @@
 import os
 import sys
 import asyncio
+from time import sleep
+
 import nodes
 import folder_paths
 import execution
@@ -9,6 +11,7 @@ import json
 import glob
 from PIL import Image
 from io import BytesIO
+import main
 
 try:
     import aiohttp
@@ -49,7 +52,6 @@ def create_cors_middleware(allowed_origin: str):
         response.headers['Access-Control-Allow-Credentials'] = 'true'
         # allow x-ijt for monaco code editor
         response.headers['Access-Control-Expose-Headers'] = 'x-ijt'
-
 
         return response
 
@@ -337,7 +339,7 @@ class PromptServer():
             info['internal_state_display'] = obj_class.INTERNAL_STATE_DISPLAY if hasattr(obj_class,
                                                                                          'INTERNAL_STATE_DISPLAY') else ''
             info['internal_state_display_code'] = obj_class.INTERNAL_STATE_DISPLAY_CODE if hasattr(obj_class,
-                                                                                         'INTERNAL_STATE_DISPLAY_CODE') else ''
+                                                                                                   'INTERNAL_STATE_DISPLAY_CODE') else ''
             if hasattr(obj_class, 'OUTPUT_NODE') and obj_class.OUTPUT_NODE == True:
                 info['output_node'] = True
             else:
@@ -379,7 +381,10 @@ class PromptServer():
             print("got prompt")
             resp_code = 200
             out_string = ""
-            json_data = await request.json()
+            if isinstance(request, web.Request):
+                json_data = await request.json()
+            else:
+                json_data = request
 
             if "number" in json_data:
                 number = float(json_data['number'])
@@ -404,6 +409,9 @@ class PromptServer():
                     prompt_id = str(uuid.uuid4())
                     outputs_to_execute = valid[2]
                     self.prompt_queue.put((number, prompt_id, prompt, extra_data, outputs_to_execute))
+
+                    main.server_obj_holder[0]['last_exec_json'] = json_data
+
                     return web.json_response({"prompt_id": prompt_id, "number": number})
                 else:
                     print("invalid prompt:", valid[1])
@@ -411,14 +419,17 @@ class PromptServer():
             else:
                 return web.json_response({"error": "no prompt", "node_errors": []}, status=400)
 
-
         @routes.post("/infer")
         async def post_infer(request):
             """
             load a request and run it on /exec (post_prompt)
             """
+
+
             # get the graphs name from the request
-            json_data:dict = await request.json()
+            json_data: dict = await request.json()
+
+            infer_uuid = json_data.pop("infer_uuid", None)
             graph_name = json_data.pop("graph_name", None)
 
             # get the servers saved graph from the saved json file
@@ -431,23 +442,51 @@ class PromptServer():
                     json.dump(saved_requests, f)
 
             saved_request_json = saved_requests[graph_name]
-            inputs_to_override=[]
-            for source_k,source_v in json_data.items():
+
+            for source_k, source_v in json_data.items():
                 for target_k, target_v in saved_request_json["prompt"].items():
                     if "class_type" in target_v:
-                        if target_v["class_type"] == "ClassRequestInputShowText":
+                        if target_v["class_type"] == "RequestInput":
                             if source_k == target_v["inputs"]["key"]:
                                 target_v["inputs"]["hidden_override"] = source_v
+                                target_v["inputs"]["uuid"] = infer_uuid
 
 
+            # create an awaitable for the json
+            await_able = asyncio.Future()
+            await_able.set_result(saved_request_json)
+            request.json = lambda: await_able
 
-            request.json = lambda: saved_request_json
-            # now await the request to /exec
+            # now await /prompt
             result = await post_prompt(request)
 
-            result2 = main.server_obj_holder[0]['last_exec_result']
+            # /prompt just checks things and then puts it in the queue
+            # so somehow we need to know when it's done
+            prompt = saved_request_json["prompt"]
+            valid = execution.validate_prompt(prompt)
+            pid = json.loads(result.body)["prompt_id"]
+            number = json.loads(result.body)["number"]
+            e = execution.PromptExecutor(self)
 
-            return web.json_response(result2, status=200)
+            e.execute(prompt,
+                      pid,
+                      {},
+                      [number])
+
+
+
+
+
+
+
+
+            return web.json_response(result, status=200)
+
+        async def wait_for_prompt(prompt_id):
+            while prompt_id not in main.server_obj_holder[0]['executed']:
+                await asyncio.sleep(0.01)
+
+            return main.server_obj_holder[0]['executed'][prompt_id]
 
         @routes.post("/queue")
         async def post_queue(request):
@@ -531,4 +570,3 @@ class PromptServer():
             print("To see the GUI go to: http://{}:{}".format(address, port))
         if call_on_start is not None:
             call_on_start(address, port)
-

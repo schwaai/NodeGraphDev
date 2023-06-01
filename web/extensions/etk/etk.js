@@ -1,5 +1,6 @@
 import {app} from "/scripts/app.js";
 import {ComfyWidgets} from "/scripts/widgets.js";
+import {addMultilineWidget} from "/scripts/widgets.js";
 
 
 const MultilineSymbol = Symbol();
@@ -57,24 +58,17 @@ function addMultilineCodeWidget(node, name, opts, app) {
     }
 
     const widget = {
-        editor: null,
-        type: "customtext",
-        name,
-        get value() {
+        editor: null, type: "customtext", name, get value() {
             return this.inputEl.value;
-        },
-        set value(x) {
+        }, set value(x) {
             this.inputEl.value = x;
-        },
-        // Called when the widget is added
+        }, // Called when the widget is added
         onAdded: function () {
             this.initializeEditor();
-        },
-        // Called when the node is created
+        }, // Called when the node is created
         onNodeCreated: function () {
             this.initializeEditor();
-        },
-        initializeEditor: function (src) {
+        }, initializeEditor: function (src) {
             // Create a container element for the code editor
             const editorContainer = document.createElement("div");
             this.editorContainer = editorContainer;
@@ -98,21 +92,19 @@ function addMultilineCodeWidget(node, name, opts, app) {
 
             // Hide the textarea
             this.inputEl.hidden = true;
-        },
-        changeSrc: function (src = this.inputEl.value) {
+        }, changeSrc: function (src = this.inputEl.value) {
             //this.editor.dispose();
             //delete this.editor;
             //this.editor = new_editor;
             //this.editor.onDidChangeModelContent((event) => {
-                //this.inputEl.value = this.editor.getValue();
-                //this.inputEl.value = this.editor.getModel().getValue();
-                // Perform any other necessary actions
+            //this.inputEl.value = this.editor.getValue();
+            //this.inputEl.value = this.editor.getModel().getValue();
+            // Perform any other necessary actions
             //}
             //);
             this.editor.getModal().setValue(src);
 
-        },
-        draw: function (ctx, _, widgetWidth, y, widgetHeight) {
+        }, draw: function (ctx, _, widgetWidth, y, widgetHeight) {
             if (!this.parent.inputHeight) {
                 // If we are initially offscreen when created we won't have received a resize event
                 // Calculate it here instead
@@ -134,8 +126,7 @@ function addMultilineCodeWidget(node, name, opts, app) {
                     // Show the editor container
                     this.editor.getDomNode().style.display = "block";
                     this.editor.layout({
-                        width: widgetWidth - 20,
-                        height: this.parent.inputHeight - 20,
+                        width: widgetWidth - 20, height: this.parent.inputHeight - 20,
                     });
 
                 } else if (!visible && this.editor) {
@@ -237,24 +228,67 @@ myWidget.style = {
 };
 
 app.registerExtension({
-    name: "ETK.widgets",
-    async getCustomWidgets() {
-        return [
-            {
-                "CODE": function (node, inputName, inputData, app) {
-                    const defaultVal = inputData[1].default || "";
+    name: "ETK.widgets", async getCustomWidgets() {
+        return [{
+            "CODE": function (node, inputName, inputData, app) {
+                const defaultVal = inputData[1].default || "";
 
-                    const tmp = addMultilineCodeWidget(node, inputName, {defaultVal, ...inputData[1]}, app);
-                    tmp.widget.type = "customtext";
-                    tmp.widget.inputEl.style.background = "purple";
-                    return tmp;
+                const tmp = addMultilineCodeWidget(node, inputName, {defaultVal, ...inputData[1]}, app);
+                tmp.widget.type = "customtext";
+                tmp.widget.inputEl.style.background = "purple";
+                return tmp;
 
-                },
             },
-        ][0];
+        },][0];
     },
 
 });
+app.registerExtension({
+    name: "ETK.widgets.hidden", async getCustomWidgets() {
+        return [{
+            "HIDDEN": function (node, inputName, inputData, app) {
+                const tmp = myWidget(node, inputName, inputData, app);
+                return tmp;
+            },
+        },][0];
+    },
+
+});
+// const tmp = ComfyWidgets["STRING"];
+// remove the widget "STRING"
+// delete ComfyWidgets["STRING"];
+
+
+app.registerExtension({
+    name: "ETK.widgets.STRING", async getCustomWidgets() {
+        delete ComfyWidgets["STRING"];
+        const it = {
+            "STRING": function (node, inputName, inputData, app) {
+                const multiline = !!inputData[1].multiline;
+                if (multiline) {
+                    const defaultVal = inputData[1].default || "";
+
+                    const tmp = addMultilineWidget(node, inputName, {defaultVal, ...inputData[1]}, app);
+                    tmp.widget.type = "customtext";
+                    tmp.widget.inputEl.style.background = "purple";
+                    tmp.widget.dynamicPrompts = false;
+                    return tmp;
+                } else {
+                    return {
+                        tmp : node.addWidget("text", inputName, inputData[1].default || "", () => {
+                        }, {style: {display: "none"}}),
+                    };
+                }
+                ;
+            }
+        }
+        ComfyWidgets["STRING"] = it.STRING;
+        return [it][0];
+
+    }
+});
+
+
 //
 //     // make a copy of the widget "STRING"
 //     // and change the name to "STRING2"
