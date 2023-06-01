@@ -2,14 +2,15 @@ import abc
 from custom_nodes.SWAIN.shared import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
 
 wg_text = {"text": ("STRING", {"multiline": True})}
-wg_history = {"history": ("STRING", {"multiline": True})}
-wg_key = {"key": ("STRING", {"multiline": False,"default":""})}
+wg_history = {"history": ("STRING", {"multiline": True,"default": ""})}
+wg_key = {"key": ("STRING", {"multiline": False, "default": ""})}
 wg_uuid = {"uuid": ("STRING", {"multiline": False})}
 wg_text2 = {"text2": ("STRING", {"multiline": True})}
 wg_role = {"role": (["assistant", "user"],)}
 wg_not_used = {"not_used": ("STRING", {"multiline": False})}
-wg_overridden_value = {"overridden_value": ("STRING", {"multiline": True,"default":""})}
-wg_hidden = {"hidden": ("STRING",{"default":""})}
+wg_overridden_value = {"overridden_value": ("STRING", {"multiline": True, "default": ""})}
+wg_hidden = {"hidden": ("STRING", {"default": ""})}
+
 
 class WidgetMetaclass(abc.ABCMeta):
     """A metaclass that automatically registers classes."""
@@ -21,11 +22,8 @@ class WidgetMetaclass(abc.ABCMeta):
             if not any(name_check):
                 NODE_CLASS_MAPPINGS[name] = cls
         if attrs.get("DISPLAY_NAME"):
-            NODE_DISPLAY_NAME_MAPPINGS [name] = attrs["DISPLAY_NAME"]
+            NODE_DISPLAY_NAME_MAPPINGS[name] = attrs["DISPLAY_NAME"]
         super().__init__(name, bases, attrs)
-
-
-
 
 
 both = lambda a, b: {**a, **b}
@@ -48,15 +46,21 @@ class BaseSimpleTextWidget(abc.ABC, metaclass=WidgetMetaclass):
     CATEGORY = "text"
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("STRING",)
-    FUNCTION = "handler"
+    FUNCTION = "pre_handler"
+    PRE_FUNCTION = "handler"
 
+    @abc.abstractmethod
     def __init__(self):
         pass
 
-    @classmethod
     @abc.abstractmethod
     def INPUT_TYPES(cls):
         """All subclasses must provide an INPUT_TYPES method"""
+        pass
+
+    @abc.abstractmethod
+    def pre_handler(self, **kwargs):
+        """All subclasses must provide a pre_handler method"""
         pass
 
     @abc.abstractmethod

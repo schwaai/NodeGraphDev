@@ -8,19 +8,20 @@ import time
 from custom_nodes.SWAIN.bases import *
 
 
-class Config:
+def set_oai_config():
     api_key = os.environ.get('OPENAI_API_KEY')
     organization = os.environ.get('OPENAI_ORG')
+    openai.organization = organization
+    openai.api_key = api_key
 
 
-openai.organization = Config.organization
-openai.api_key = Config.api_key
-
+set_oai_config()
 NODE_CLASS_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS = {}
 
 
-class SimpleTextWidget(BaseSimpleTextWidget):
+class SimpleTextWidget(BaseSimpleTextWidget, abc.ABC):
+
     def __init__(self, func):
         super().__init__()
         self.func = func
@@ -30,12 +31,23 @@ class SimpleTextWidget(BaseSimpleTextWidget):
         use = required(wg_text)
         return use
 
-    def handler(self, text):
-        """Do something with text"""
-        pass
+
+class SimpleLLMTextWidget(SimpleTextWidget, abc.ABC):
+    @classmethod
+    def INPUT_TYPES(cls):
+        use = required(both(wg_history, wg_text2))
+        return use
+
+    def pre_handler(self, **kwargs):
+        set_oai_config()
+
+        if "history" not in kwargs:
+            kwargs["history"] = ""
+
+        return self.handler(**kwargs)
 
 
-class SimpleTextWidget2x1(BaseSimpleTextWidget):
+class SimpleTextWidget2x1(SimpleLLMTextWidget):
     @classmethod
     def INPUT_TYPES(cls):
         use = both(required(wg_history), optional(both(wg_text2, wg_role)))
@@ -46,8 +58,8 @@ class SimpleTextWidget2x1(BaseSimpleTextWidget):
         pass
 
 
-class SimpleTextWidget2x2(BaseSimpleTextWidget):
-    RETURN_TYPES = (ret_type(wg_text),ret_type(wg_text))
+class SimpleTextWidget2x2(SimpleLLMTextWidget):
+    RETURN_TYPES = (ret_type(wg_text), ret_type(wg_text))
     RETURN_NAMES = ("History", "Result",)
 
     @classmethod
@@ -55,7 +67,10 @@ class SimpleTextWidget2x2(BaseSimpleTextWidget):
         use = both(required(both(wg_history, wg_text2)), optional(wg_role))
         return use
 
-    def handler(self, history, text2, role="user"):
+    def handler(self, history, text2, role="user", **kwargs):
+        # call the superclasses handler
+        kwa = {"history": history, "text2": text2, "role": role}
+        super().handler(kwa)
         """Do something with history, text2, and role"""
         pass
 
@@ -126,6 +141,7 @@ def OAI_completion(user=None, assistant=None, system=None, history: [{str: str}]
     :param history: list of dicts with keys "role" and "content"
     :return: gpt_message, history
     """
+
     if history == "undefined":
         history = []
     if history == "":
@@ -194,7 +210,7 @@ avoid numpy and PIL as much as possible
 """
 
 
-class LLMCompletion(SimpleTextWidget):
+class LLMCompletion(SimpleLLMTextWidget):
     """Uses the input text to call the specified LLM model and returns the output string"""
 
     def __init__(self):
@@ -212,7 +228,7 @@ class LLMCompletion(SimpleTextWidget):
         use = required(wg_text)
         return use
 
-    def handler(self, text):
+    def handler(self, text, **kwargs):
         if text == "":
             return ("None",)
         completion, history = self.func(user=text)
@@ -225,7 +241,7 @@ class LLMCompletionPrepend(SimpleTextWidget2x1):
 
     def __init__(self):
         self.func = OAI_completion
-        super().__init__()
+        super().__init__(self.func)
         import uuid
         self.SSID = str(uuid.uuid4())
 
@@ -238,7 +254,7 @@ class LLMCompletionPrepend(SimpleTextWidget2x1):
         use = both(required(wg_history), optional(both(wg_text2, wg_role)))
         return use
 
-    def handler(self, history, role, text2=None):
+    def handler(self, history, role, text2=None, **kwargs):
         if history == "":
             return ("None",)
 
@@ -255,12 +271,11 @@ class LLMCompletionPrepend(SimpleTextWidget2x1):
 class LLMConvo(SimpleTextWidget2x2):
     """Uses the input text to call the specified LLM model and returns the output string"""
 
-
-    RETURN_TYPES = (ret_type(wg_text),ret_type(wg_text),)
+    RETURN_TYPES = (ret_type(wg_text), ret_type(wg_text),)
 
     def __init__(self):
         self.func = OAI_completion
-        super().__init__()
+        super().__init__(self.func)
         import uuid
         self.SSID = str(uuid.uuid4())
 
@@ -275,11 +290,12 @@ class LLMConvo(SimpleTextWidget2x2):
         use = both(required(both(wg_history, wg_text2)), optional(wg_role))
         return use
 
-    def handler(self, history, text2, role="user"):
+    def handler(self, history=None, text2=None, role=None, **kwargs):
         """
         text1 is the conversation history, text2 is the user input
         for the output the first return is the appended conversation and the second is the completion
         """
+
         import binascii
 
         try:
@@ -347,3 +363,21 @@ class TextConcatNewLine(SimpleTextWidget2x1):
     def handler(self, history, role, text2):
         # decompose lists to first element
         return (history + "\n\n" + text2,)
+
+
+# inline tests
+if __name__ == "__main__":
+    # test LLMConvo
+    base_test = LLMConvo()
+    ret = base_test.pre_handler(history="", text2="world", role="user")
+    print(ret)
+
+    # test LLMCompletionPrepend
+    base_test = LLMCompletionPrepend()
+    ret = base_test.pre_handler(history="", text2="world", role="user")
+    print(ret)
+
+    # test LLMCompletion
+    base_test = LLMCompletion()
+    ret = base_test.pre_handler(text="")
+    print(ret)

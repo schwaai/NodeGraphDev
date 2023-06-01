@@ -52,43 +52,52 @@ class ShowText:
         # #2 [str] -> [str]
         # #3 str -> [str]
 
-        if text:
-            # check for bare str
-            if isinstance(text, str):
-                text_d = [text]
-            else:
-                text = text[0]
-                # reject all input that is not [] or str
-                if not isinstance(text, list):
-                    raise TypeError("encapsulating type must be list or must be bare str")
-                else:
-                    if len(text) == 0:  # empty list but allowed
-                        text_d = "none"
-                    else:
-                        if isinstance(text[0], dict):
-                            # this is valid but needs transformed to [str+str, ...]
-
-                            text_d = []
-                            for d in text:
-                                kvp = []
-                                for k, v in d.items():
-                                    kvp_str = f'{k}\n{v}'
-                                    text_d.append(kvp_str)
-                        else:
-                            # this is valid and needs no transformation
-                            text_d = text
-        else:
-            text_d = "undefined"
-
         # catch edge case where we are displaying something with a client_id in [0] (when displaying exec data)
-        if "client_id" in text_d[0]:
-            text_d = [str(text)]
+        text_d = fix_display_text(text)
 
         if not text_d:
             raise TypeError('Input should be a list of strings, list of dicts, or a single string')
 
         ret = {"ui": {"text": text_d}, "result": text}
         return ret
+
+
+def fix_display_text(text: [] or [{}] or str):
+    if text:
+        # check for bare str
+        if isinstance(text, str):
+            text_d = [text]
+        else:
+            text = text[0]
+            if isinstance(text, str):
+                text_d = [text]
+                return text_d
+                # reject all input that is not [] or str
+            if not isinstance(text, list):
+                raise TypeError("encapsulating type must be list or must be bare str")
+            else:
+                if len(text) == 0:  # empty list but allowed
+                    text_d = "none"
+                else:
+                    if isinstance(text[0], dict):
+                        # this is valid but needs transformed to [str+str, ...]
+
+                        text_d = []
+                        for d in text:
+                            kvp = []
+                            for k, v in d.items():
+                                kvp_str = f'{k}\n{v}'
+                                text_d.append(kvp_str)
+                    else:
+                        # this is valid and needs no transformation
+                        text_d = text
+    else:
+        text_d = "undefined"
+
+    if "client_id" in text_d[0]:
+        text_d = [str(text)]
+
+    return text_d
 
 
 NODE_CLASS_MAPPINGS = {
