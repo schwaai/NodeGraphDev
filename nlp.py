@@ -3,8 +3,9 @@ import os
 from warnings import warn
 
 import openai
-import abc
 import time
+
+from custom_nodes.SWAIN.bases import BaseSimpleTextWidget, WidgetMetaclass
 
 
 class Config:
@@ -12,101 +13,50 @@ class Config:
     organization = os.environ.get('OPENAI_ORG')
 
 
-NODE_CLASS_MAPPINGS = {}
-
 openai.organization = Config.organization
 openai.api_key = Config.api_key
 
-
-class WidgetMetaclass(abc.ABCMeta):
-    """A metaclass that automatically registers classes."""
-
-    def __init__(cls, name, bases, attrs):
-        if not abc.ABC in bases:  # don't register ABC itself
-            NODE_CLASS_MAPPINGS[name] = cls
-        super().__init__(name, bases, attrs)
+NODE_CLASS_MAPPINGS = {}
+NODE_DISPLAY_NAME_MAPPINGS = {}
 
 
-class SimpleTextWidget(abc.ABC, metaclass=WidgetMetaclass):
-    """Abstract base class for simple construction"""
-
-    CATEGORY = "text"
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("STRING",)
-    FUNCTION = "handler"
-
+class SimpleTextWidget(BaseSimpleTextWidget):
     def __init__(self, func):
+        super().__init__()
         self.func = func
 
     @classmethod
     def INPUT_TYPES(cls):
-        return {"required": {
-            "text": ("STRING", {"multiline": True}),
-        },
-        }
+        use = cls.required(cls._text)
+        return use
 
-    @abc.abstractmethod
     def handler(self, text):
-        """All subclasses must provide a handler method"""
+        """Do something with text"""
         pass
 
 
-class SimpleTextWidget2x1(abc.ABC, metaclass=WidgetMetaclass):
-    """Abstract base class for simple construction"""
-
-    CATEGORY = "text"
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("STRING",)
-    FUNCTION = "handler"
-
-    def __init__(self):
-        pass
-
+class SimpleTextWidget2x1(BaseSimpleTextWidget):
     @classmethod
     def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "history": ("STRING", {"multiline": True}),
-            },
-            "optional": {
-                "text2": ("STRING", {"multiline": True}),
-                "role": (["assistant", "user"],),
-            }
-        }
+        use = cls.both(cls.required(cls._history), cls.optional(cls.both(cls._text2, cls._role)))
+        return use
 
-    @abc.abstractmethod
     def handler(self, history, role, text2=None):
-        """All subclasses must provide a handler method"""
+        """Do something with history, role, and text2"""
         pass
 
 
-class SimpleTextWidget2x2(abc.ABC, metaclass=WidgetMetaclass):
-    """Abstract base class for simple construction"""
-
-    CATEGORY = "text"
+class SimpleTextWidget2x2(BaseSimpleTextWidget):
     RETURN_TYPES = ("STRING", "STRING",)
     RETURN_NAMES = ("History", "Result",)
-    FUNCTION = "handler"
-
-    def __init__(self):
-        pass
 
     @classmethod
     def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "history": ("STRING", {"multiline": True}),
-                "text2": ("STRING", {"multiline": True}),
-            },
-            "optional": {
-                "role": (["assistant", "user"],),
-            }
+        use = cls.both(cls.required(cls.both(cls._history, cls._text2)), cls.optional(cls._role))
+        return use
 
-        }
-
-    @abc.abstractmethod
     def handler(self, history, text2, role="user"):
-        """All subclasses must provide a handler method"""
+        """Do something with history, text2, and role"""
         pass
 
 
@@ -257,6 +207,11 @@ class LLMCompletion(SimpleTextWidget):
         self.server_string = server_obj_holder[0]["server_strings"]
         self.server_string[self.SSID] = "empty"
 
+    @classmethod
+    def INPUT_TYPES(cls):
+        use = cls.required(cls._text)
+        return use
+
     def handler(self, text):
         if text == "":
             return ("None",)
@@ -278,6 +233,11 @@ class LLMCompletionPrepend(SimpleTextWidget2x1):
         self.server_string = server_obj_holder[0]["server_strings"]
         self.server_string[self.SSID] = []
 
+    @classmethod
+    def INPUT_TYPES(cls):
+        use = cls.both(cls.required(cls._history), cls.optional(cls.both(cls._text2, cls._role)))
+        return use
+
     def handler(self, history, role, text2=None):
         if history == "":
             return ("None",)
@@ -292,29 +252,11 @@ class LLMCompletionPrepend(SimpleTextWidget2x1):
         return (completion,)
 
 
-def list_to_hex_str(x: list):
-    import binascii, json
-    print(len(str(x)))
-
-    # str then json then hex ie str(hex(json(object)))
-    x1 = json.dumps(x)
-    x2 = binascii.hexlify(x1.encode('utf-8'))
-    x3 = str(x2)
-    return x3
-
-
-def hex_str_to_list(x: str):
-    import binascii, json
-    print(len(str(x)))
-
-    x1 = x[2:-1]
-    x2 = binascii.unhexlify(x1)
-    x3 = json.loads(x2)
-    return x3
-
-
 class LLMConvo(SimpleTextWidget2x2):
     """Uses the input text to call the specified LLM model and returns the output string"""
+
+
+    RETURN_TYPES = (ret_type(), "STRING",)
 
     def __init__(self):
         self.func = OAI_completion
@@ -327,6 +269,11 @@ class LLMConvo(SimpleTextWidget2x2):
         self.server_string[self.SSID] = []
 
     INTERNAL_STATE_DISPLAY = True
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        use = cls.both(cls.required(cls.both(cls._history, cls._text2)), cls.optional(cls._role))
+        return use
 
     def handler(self, history, text2, role="user"):
         """
@@ -374,10 +321,15 @@ class LLMConvo(SimpleTextWidget2x2):
 
 
 class TextConcat(SimpleTextWidget2x1):
-    """Uses the input text to call the specified LLM model and returns the output string"""
+    """Concatenates the input texts and returns the output string"""
 
     def __init__(self):
         super().__init__()
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        use = cls.both(cls.required(cls._history), cls.optional(cls._text2))
+        return use
 
     def handler(self, history, role, text2):
         if isinstance(history, list):
@@ -388,10 +340,16 @@ class TextConcat(SimpleTextWidget2x1):
 
 
 class TextConcatNewLine(SimpleTextWidget2x1):
-    """Uses the input text to call the specified LLM model and returns the output string"""
+    """Concatenates the input texts with a new line and returns the output string"""
+    DISPLAY_NAME = "Text Concat New Line"
 
     def __init__(self):
         super().__init__()
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        use = cls.both(cls.required(cls._history), cls.optional(cls._text2))
+        return use
 
     def handler(self, history, role, text2):
         # decompose lists to first element
