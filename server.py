@@ -369,20 +369,27 @@ class ExecServer():
             with open(folder_paths.saved_requests_json, 'r+') as f:
                 try:
                     saved_requests = json.load(f)
-                except:
+                except FileNotFoundError as e:
                     saved_requests = {}
                     json.dump(saved_requests, f)
+                    Warning(f"saved_requests.json was empty, created new file, aborting request for {graph_name}")
 
-            saved_request_json = saved_requests[graph_name]
+            try:
+                saved_request_json = saved_requests[graph_name]
+            except KeyError as e:
+                Warning (f"graph_name {graph_name} not found in saved_requests.json, aborting request")
 
-            # override the inputs in the saved graph with the inputs from the request
-            inputs_to_override = []
-            for source_k, source_v in json_data.items():
-                for target_k, target_v in saved_request_json["prompt"].items():
-                    if "class_type" in target_v:
-                        if target_v["class_type"] == "RequestInput":
-                            if source_k == target_v["inputs"]["key"]:
-                                target_v["inputs"]["hidden"] = source_v
+            try:
+                # override the inputs in the saved graph with the inputs from the request
+                inputs_to_override = []
+                for source_k, source_v in json_data.items():
+                    for target_k, target_v in saved_request_json["prompt"].items():
+                        if "class_type" in target_v:
+                            if target_v["class_type"] == "RequestInput":
+                                if source_k == target_v["inputs"]["key"]:
+                                    target_v["inputs"]["hidden"] = source_v
+            except Exception as e:
+                Warning(f"error overriding inputs in saved graph: {e}")
 
             request.json = lambda: saved_request_json
 
