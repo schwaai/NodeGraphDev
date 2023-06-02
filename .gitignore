@@ -19,3 +19,5 @@ extra_model_paths.yaml
 /log.txt
 /web/extensions/README.md
 /saved_requests.json
+
+/.idea
