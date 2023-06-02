@@ -324,6 +324,9 @@ class PromptServer():
                 node_class] if node_class in nodes.NODE_DISPLAY_NAME_MAPPINGS.keys() else node_class
             info['description'] = ''
             info['category'] = 'sd'
+            info['internal_state'] = obj_class.INTERNAL_STATE if hasattr(obj_class, 'INTERNAL_STATE') else ''
+            info['internal_state_display'] = obj_class.INTERNAL_STATE_DISPLAY if hasattr(obj_class,
+                                                                                         'INTERNAL_STATE_DISPLAY') else ' '
             if hasattr(obj_class, 'OUTPUT_NODE') and obj_class.OUTPUT_NODE == True:
                 info['output_node'] = True
             else:
@@ -396,6 +399,44 @@ class PromptServer():
                     return web.json_response({"error": valid[1], "node_errors": valid[3]}, status=400)
             else:
                 return web.json_response({"error": "no prompt", "node_errors": []}, status=400)
+
+
+        @routes.post("/infer")
+        async def post_infer(request):
+            """
+            load a request and run it on /exec (post_prompt)
+            """
+            # get the graphs name from the request
+            json_data:dict = await request.json()
+            graph_name = json_data.pop("graph_name", None)
+
+            # get the servers saved graph from the saved json file
+            # also create the file if it doesn't exist
+            with open(folder_paths.saved_requests_json, 'r+') as f:
+                try:
+                    saved_requests = json.load(f)
+                except:
+                    saved_requests = {}
+                    json.dump(saved_requests, f)
+
+            saved_request_json = saved_requests[graph_name]
+            inputs_to_override=[]
+            for source_k,source_v in json_data.items():
+                for target_k, target_v in saved_request_json["prompt"].items():
+                    if "class_type" in target_v:
+                        if target_v["class_type"] == "ClassRequestInputShowText":
+                            if source_k == target_v["inputs"]["key"]:
+                                target_v["inputs"]["hidden_override"] = source_v
+
+
+
+            request.json = lambda: saved_request_json
+            # now await the request to /exec
+            result = await post_prompt(request)
+
+            result2 = main.server_obj_holder[0]['last_exec_result']
+
+            return web.json_response(result2, status=200)
 
         @routes.post("/queue")
         async def post_queue(request):
