@@ -69,6 +69,8 @@ def load_extra_path_config(yaml_path):
                 print("Adding extra search path", x, full_path)
                 folder_paths.add_model_folder_path(x, full_path)
 
+
+server_obj_holder = [{"server_strings":{}}]
 if __name__ == "__main__":
     cleanup_temp()
 
