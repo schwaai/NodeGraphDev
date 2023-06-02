@@ -931,12 +931,21 @@ class SetLatentNoiseMask:
         s["noise_mask"] = mask.reshape((-1, 1, mask.shape[-2], mask.shape[-1]))
         return (s,)
 
-def common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent, denoise=1.0, disable_noise=False, start_step=None, last_step=None, force_full_denoise=False):
+def common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent, denoise=1.0, disable_noise=False, start_step=None, last_step=None, force_full_denoise=False,
+    one_seed_per_batch = False):
+
     device = comfy.model_management.get_torch_device()
     latent_image = latent["samples"]
 
     if disable_noise:
         noise = torch.zeros(latent_image.size(), dtype=latent_image.dtype, layout=latent_image.layout, device="cpu")
+    elif one_seed_per_batch:
+        # generate the first noise and then repeat it for the rest of the batch
+        sz = latent_image.size()
+        sz = (1, sz[1], sz[2], sz[3])
+        noise = torch.randn(sz, dtype=latent_image.dtype, layout=latent_image.layout,
+                            generator=torch.manual_seed(seed), device="cpu")
+        noise = torch.cat([noise] * latent_image.shape[0])
     else:
         batch_inds = latent["batch_index"] if "batch_index" in latent else None
         noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
