@@ -93,7 +93,7 @@ class Blend:
         blended_rgba_image = image1 * (1 - blend_factor) + blended_rgba_image * blend_factor
         blended_rgba_image = torch.clamp(blended_rgba_image, 0, 1)
         blended_image = blended_rgba_image[..., :3]
-        return (blended_image,blended_rgba_image)
+        return (blended_image,blended_rgba_image,)
 
     def blend_mode(self, img1, img2, mode):
         """
@@ -128,11 +128,24 @@ class Blend:
             print(f"beginning of composite_alpha")
             print(f"img1 shape: {img1.shape}")
             print(f"img2 shape: {img2.shape}")
+
             # alpha blending
             alpha_channel = img1[:, :, :, 3:4]
-            img2_contribution = img2 * (1-alpha_channel)
+            img2_contribution = img2 * (1.0 - alpha_channel)
             img1_contribution = img1 * alpha_channel
+
             out = img2_contribution + img1_contribution
+
+            # 1-((1-a1) - (1-a2) - (1-a2) - (1-a1)) is the amount of light that passes through both layers
+            # that is to say light passing through both layers and then back to the observer
+            # create the new alpha channel
+            new_alpha_values =  (2*((1 - img1[:, :, :, 3:4])) - (2*(1 - img2[:, :, :, 3:4])))
+            # clamp the alpha channel to 0-1
+            new_alpha_values = torch.clamp(new_alpha_values, 0, 1)
+
+            # assign
+            out = torch.cat([out[:, :, :, 0:3], new_alpha_values], dim=-1)
+
             return out
 
 
