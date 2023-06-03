@@ -3,6 +3,7 @@ import { ComfyDialog, $el } from "/scripts/ui.js";
 import {ComfyWidgets} from "../../scripts/widgets.js";
 
 var update_comfyui_button = null;
+var fetch_updates_button = null;
 
 async function getCustomnodeMappings() {
 	var mode = "url";
@@ -114,6 +115,45 @@ async function updateComfyUI() {
 	finally {
 		update_comfyui_button.disabled = false;
 		update_comfyui_button.innerText = "Update ComfyUI";
+	}
+}
+
+async function fetchUpdates() {
+	fetch_updates_button.innerText = "Fetching updates...";
+	fetch_updates_button.disabled = true;
+
+	try {
+		var mode = "url";
+        if(ManagerMenuDialog.instance.local_mode_checkbox.checked)
+            mode = "local";
+
+		const response = await fetch(`/customnode/fetch_updates?mode=${mode}`);
+
+		if(response.status == 400) {
+			app.ui.dialog.show('Failed to fetch updates.');
+			app.ui.dialog.element.style.zIndex = 9999;
+			return false;
+		}
+
+		if(response.status == 201) {
+			app.ui.dialog.show('There is an updated extension available.');
+			app.ui.dialog.element.style.zIndex = 9999;
+		}
+		else {
+			app.ui.dialog.show('All extensions are already up-to-date with the latest versions.');
+			app.ui.dialog.element.style.zIndex = 9999;
+		}
+
+		return true;
+	}
+	catch(exception) {
+		app.ui.dialog.show(`Failed to update ComfyUI / ${exception}`);
+		app.ui.dialog.element.style.zIndex = 9999;
+		return false;
+	}
+	finally {
+		fetch_updates_button.disabled = false;
+		fetch_updates_button.innerText = "Fetch Updates";
 	}
 }
 
@@ -306,6 +346,7 @@ class CustomNodesInstaller extends ComfyDialog {
 					installBtn3 = document.createElement('button');
 					installBtn3.innerHTML = 'Enable';
 					installBtn3.style.backgroundColor = 'blue';
+					installBtn3.style.color = 'white';
 					this.install_buttons.push(installBtn3);
 
 					installBtn.innerHTML = 'Uninstall';
@@ -315,11 +356,13 @@ class CustomNodesInstaller extends ComfyDialog {
 					installBtn2 = document.createElement('button');
 					installBtn2.innerHTML = 'Update';
 					installBtn2.style.backgroundColor = 'blue';
+					installBtn2.style.color = 'white';
 					this.install_buttons.push(installBtn2);
 
 					installBtn3 = document.createElement('button');
 					installBtn3.innerHTML = 'Disable';
 					installBtn3.style.backgroundColor = 'MediumSlateBlue';
+					installBtn3.style.color = 'white';
 					this.install_buttons.push(installBtn3);
 
 					installBtn.innerHTML = 'Uninstall';
@@ -329,6 +372,7 @@ class CustomNodesInstaller extends ComfyDialog {
 					installBtn3 = document.createElement('button');
 					installBtn3.innerHTML = 'Disable';
 					installBtn3.style.backgroundColor = 'MediumSlateBlue';
+					installBtn3.style.color = 'white';
 					this.install_buttons.push(installBtn3);
 
 					installBtn.innerHTML = 'Uninstall';
@@ -337,10 +381,12 @@ class CustomNodesInstaller extends ComfyDialog {
 				case 'False':
 					installBtn.innerHTML = 'Install';
 					installBtn.style.backgroundColor = 'black';
+					installBtn.style.color = 'white';
 					break;
 				default:
 					installBtn.innerHTML = 'Try Install';
 					installBtn.style.backgroundColor = 'Gray';
+					installBtn.style.color = 'white';
 				}
 
 				if(installBtn2 != null) {
@@ -375,8 +421,8 @@ class CustomNodesInstaller extends ComfyDialog {
 
 				data5.appendChild(installBtn);
 
-				dataRow.style.backgroundColor = "#444444";
-				dataRow.style.color = "White";
+				dataRow.style.backgroundColor = "var(--bg-color)";
+				dataRow.style.color = "var(--fg-color)";
 				dataRow.style.textAlign = "left";
 
 				dataRow.appendChild(data1);
@@ -461,9 +507,9 @@ class AlternativesInstaller extends ComfyDialog {
 			this.element.removeChild(this.element.children[0]);
 		}
 
-		const msg = $el('div', {id:'custom-message'}, 
-			[$el('br'), 
-			'The custom node DB is currently being updated, and updates to custom nodes are being checked for.', 
+		const msg = $el('div', {id:'custom-message'},
+			[$el('br'),
+			'The custom node DB is currently being updated, and updates to custom nodes are being checked for.',
 			$el('br')]);
 		msg.style.height = '100px';
 		msg.style.verticalAlign = 'middle';
@@ -563,41 +609,50 @@ class AlternativesInstaller extends ComfyDialog {
 						installBtn3 = document.createElement('button');
 						installBtn3.innerHTML = 'Enable';
 						installBtn3.style.backgroundColor = 'blue';
+						installBtn3.style.color = 'white';
 						this.install_buttons.push(installBtn3);
 
 						installBtn.innerHTML = 'Uninstall';
 						installBtn.style.backgroundColor = 'red';
+						installBtn.style.color = 'white';
 						break;
 					case 'Update':
 						installBtn2 = document.createElement('button');
 						installBtn2.innerHTML = 'Update';
 						installBtn2.style.backgroundColor = 'blue';
+						installBtn2.style.color = 'white';
 						this.install_buttons.push(installBtn2);
 
 						installBtn3 = document.createElement('button');
 						installBtn3.innerHTML = 'Disable';
 						installBtn3.style.backgroundColor = 'MediumSlateBlue';
+						installBtn3.style.color = 'white';
 						this.install_buttons.push(installBtn3);
 
 						installBtn.innerHTML = 'Uninstall';
 						installBtn.style.backgroundColor = 'red';
+						installBtn.style.color = 'white';
 						break;
 					case 'True':
 						installBtn3 = document.createElement('button');
 						installBtn3.innerHTML = 'Disable';
 						installBtn3.style.backgroundColor = 'MediumSlateBlue';
+						installBtn3.style.color = 'white';
 						this.install_buttons.push(installBtn3);
 
 						installBtn.innerHTML = 'Uninstall';
 						installBtn.style.backgroundColor = 'red';
+						installBtn.style.color = 'white';
 						break;
 					case 'False':
 						installBtn.innerHTML = 'Install';
 						installBtn.style.backgroundColor = 'black';
+						installBtn.style.color = 'white';
 						break;
 					default:
 						installBtn.innerHTML = 'Try Install';
 						installBtn.style.backgroundColor = 'Gray';
+						installBtn.style.color = 'white';
 					}
 
 					if(installBtn2 != null) {
@@ -605,7 +660,7 @@ class AlternativesInstaller extends ComfyDialog {
 						installBtn2.addEventListener('click', function() {
 							install_custom_node(data.custom_node, AlternativesInstaller.instance, 'update');
 						});
-	
+
 						data6.appendChild(installBtn2);
 					}
 
@@ -634,8 +689,8 @@ class AlternativesInstaller extends ComfyDialog {
 					data6.appendChild(installBtn);
 				}
 
-				dataRow.style.backgroundColor = "#444444";
-				dataRow.style.color = "White";
+				dataRow.style.backgroundColor = "var(--bg-color)";
+				dataRow.style.color = "var(--fg-color)";
 				dataRow.style.textAlign = "left";
 
 				dataRow.appendChild(data1);
@@ -816,14 +871,16 @@ class ModelInstaller extends ComfyDialog {
 				case 'True':
 					installBtn.innerHTML = 'Installed';
 					installBtn.style.backgroundColor = 'green';
+					installBtn.style.color = 'white';
 					installBtn.disabled = true;
 					break;
 				default:
 					installBtn.innerHTML = 'Install';
 					installBtn.style.backgroundColor = 'black';
+					installBtn.style.color = 'white';
 					break;
 				}
-				
+
 				installBtn.style.width = "100px";
 
 				installBtn.addEventListener('click', function() {
@@ -832,8 +889,8 @@ class ModelInstaller extends ComfyDialog {
 
 				data_install.appendChild(installBtn);
 
-				dataRow.style.backgroundColor = "#444444";
-				dataRow.style.color = "White";
+				dataRow.style.backgroundColor = "var(--bg-color)";
+				dataRow.style.color = "var(--fg-color)";
 				dataRow.style.textAlign = "left";
 
 				dataRow.appendChild(data1);
@@ -888,7 +945,7 @@ class ManagerMenuDialog extends ComfyDialog {
 
 	createButtons() {
 		this.local_mode_checkbox = $el("input",{type:'checkbox', id:"use_local_db"},[])
-		const checkbox_text = $el("label",{},["Use local DB"])
+		const checkbox_text = $el("label",{},[" Use local DB"])
 		checkbox_text.style.color = "var(--fg-color)"
 
 		update_comfyui_button =
@@ -899,9 +956,17 @@ class ManagerMenuDialog extends ComfyDialog {
 						() => updateComfyUI()
 				});
 
+		fetch_updates_button =
+				$el("button", {
+					type: "button",
+					textContent: "Fetch Updates",
+					onclick:
+						() => fetchUpdates()
+				});
+
 		const res =
 			[
-				$el("tr.td", {width:"100%"}, [$el("font", {size:6, color:"white"}, [`Manager Menu`])]),
+				$el("tr.td", {width:"100%"}, [$el("font", {size:6, color:"white"}, [`ComfyUI Manager Menu`])]),
 				$el("br", {}, []),
 				$el("div", {}, [this.local_mode_checkbox, checkbox_text]),
 				$el("br", {}, []),
@@ -938,7 +1003,9 @@ class ManagerMenuDialog extends ComfyDialog {
 						}
 				}),
 
+                $el("br", {}, []),
 				update_comfyui_button,
+				fetch_updates_button,
 
 				$el("br", {}, []),
 				$el("button", {
