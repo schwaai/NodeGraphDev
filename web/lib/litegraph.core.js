@@ -6126,11 +6126,20 @@ LGraphNode.prototype.executeAction = function(action)
 
 					clicking_canvas_bg = true;
 				}
+              // HOGE
+              if (!e.altKey) {
+                this.dragging_rectangle = new Float32Array(4);
+                this.dragging_rectangle[0] = e.canvasX;
+                this.dragging_rectangle[1] = e.canvasY;
+                this.dragging_rectangle[2] = 1;
+                this.dragging_rectangle[3] = 1;
+                skip_action = true;
+              }
             }
 
             if (!skip_action && clicking_canvas_bg && this.allow_dragcanvas) {
             	//console.log("pointerevents: dragging_canvas start");
-            	this.dragging_canvas = true;
+            	// this.dragging_canvas = true; // HOGE
             }
             
         } else if (e.which == 2) {
@@ -6634,7 +6643,7 @@ LGraphNode.prototype.executeAction = function(action)
 							} //out of the visible area
 							to_select.push(nodeX);
 						}
-						if (to_select.length) {
+						if (true || to_select.length) { // HOGE
 							this.selectNodes(to_select,e.shiftKey); // add to selection with shift
 						}
 					}else{
