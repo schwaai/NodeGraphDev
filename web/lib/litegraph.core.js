@@ -6068,7 +6068,7 @@ LGraphNode.prototype.executeAction = function(action)
 							this.graph.beforeChange();
                             this.node_dragged = node;
                         }
-                        this.processNodeSelected(node, e);
+                        if (!node.is_selected) this.processNodeSelected(node, e);
                     } else { // double-click
                         /**
                          * Don't call the function if the block is already selected.
