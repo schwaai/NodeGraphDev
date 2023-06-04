@@ -88,7 +88,7 @@ function seedWidget(node, inputName, inputData) {
 const MultilineSymbol = Symbol();
 const MultilineResizeSymbol = Symbol();
 
-function addMultilineWidget(node, name, opts, app) {
+export function addMultilineWidget(node, name, opts, app) {
 	const MIN_SIZE = 50;
 
 	function computeSize(size) {
