@@ -47,6 +47,10 @@ def create_cors_middleware(allowed_origin: str):
         response.headers['Access-Control-Allow-Methods'] = 'POST, GET, DELETE, PUT, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         response.headers['Access-Control-Allow-Credentials'] = 'true'
+        # allow x-ijt for monaco code editor
+        response.headers['Access-Control-Expose-Headers'] = 'x-ijt'
+
+
         return response
 
     return cors_middleware
@@ -326,7 +330,8 @@ class PromptServer():
             info['category'] = 'sd'
             info['internal_state'] = obj_class.INTERNAL_STATE if hasattr(obj_class, 'INTERNAL_STATE') else ''
             info['internal_state_display'] = obj_class.INTERNAL_STATE_DISPLAY if hasattr(obj_class,
-                                                                                         'INTERNAL_STATE_DISPLAY') else ' '
+            info['internal_state_display_code'] = obj_class.INTERNAL_STATE_DISPLAY_CODE if hasattr(obj_class,
+                                                                                         'INTERNAL_STATE_DISPLAY_CODE') else ''
             if hasattr(obj_class, 'OUTPUT_NODE') and obj_class.OUTPUT_NODE == True:
                 info['output_node'] = True
             else:
