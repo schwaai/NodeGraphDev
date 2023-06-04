@@ -136,6 +136,11 @@ class PromptServer():
             return type_dir, dir_type
 
         def image_upload(post, image_save_function=None):
+            """
+            Handles image uploads and saves them to the specified directory, optionally calling a function
+            to save the image in a different format.
+            Also handles overwriting existing files,creating subfolders, and creating the directory if it doesn't exist.
+            """
             image = post.get("image")
             overwrite = post.get("overwrite")
 
