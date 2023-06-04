@@ -137,11 +137,10 @@ function addMultilineCodeWidget(node, name, opts, app) {
                     position: "absolute",
                     zIndex: app.graph._nodes.indexOf(node),
                     color: "white",
-                    height: this.parent.inputHeight-20 + "px",
+                    height: this.parent.inputHeight - 20 + "px",
                     width: widgetWidth - 20 + "px",
                 });
-            }
-            else {
+            } else {
                 this.initializeEditor();
             }
         },
@@ -153,11 +152,6 @@ function addMultilineCodeWidget(node, name, opts, app) {
                 delete this.editor;
             }
 
-            // Remove the editor container element from the DOM
-            const editorContainer = document.querySelector(".comfy-editor-container");
-            if (editorContainer) {
-                editorContainer.remove();
-            }
         },
 
     };
@@ -195,16 +189,11 @@ function addMultilineCodeWidget(node, name, opts, app) {
         // When removing this node we need to remove the input from the DOM
         for (let y in this.widgets) {
             if (this.widgets[y].inputEl) {
-                //this.widgets[y].inputEl.remove();
-                //completely remove the input from the widget
-                //delete this.widgets[y].inputEl;
-                //widget.inputEl?.remove();
-                widget.onRemove();
-
+                // Call the onRemove method on the widget from this node
+                this.widgets[y].onRemove();
             }
         }
     };
-
 
 
     if (node[MultilineSymbol]) {
