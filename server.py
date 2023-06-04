@@ -330,6 +330,7 @@ class PromptServer():
             info['category'] = 'sd'
             info['internal_state'] = obj_class.INTERNAL_STATE if hasattr(obj_class, 'INTERNAL_STATE') else ''
             info['internal_state_display'] = obj_class.INTERNAL_STATE_DISPLAY if hasattr(obj_class,
+                                                                                         'INTERNAL_STATE_DISPLAY') else ''
             info['internal_state_display_code'] = obj_class.INTERNAL_STATE_DISPLAY_CODE if hasattr(obj_class,
                                                                                          'INTERNAL_STATE_DISPLAY_CODE') else ''
             if hasattr(obj_class, 'OUTPUT_NODE') and obj_class.OUTPUT_NODE == True:
