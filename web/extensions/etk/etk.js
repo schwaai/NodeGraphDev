@@ -195,21 +195,17 @@ function addMultilineCodeWidget(node, name, opts, app) {
         // When removing this node we need to remove the input from the DOM
         for (let y in this.widgets) {
             if (this.widgets[y].inputEl) {
-                this.widgets[y].inputEl.remove();
+                //this.widgets[y].inputEl.remove();
+                //completely remove the input from the widget
+                //delete this.widgets[y].inputEl;
+                //widget.inputEl?.remove();
+                widget.onRemove();
+
             }
         }
     };
 
-    widget.onRemove = () => {
-        widget.inputEl?.remove();
 
-        // Restore original size handler if we are the last
-        if (!--node[MultilineSymbol]) {
-            node.onResize = node[MultilineResizeSymbol];
-            delete node[MultilineSymbol];
-            delete node[MultilineResizeSymbol];
-        }
-    };
 
     if (node[MultilineSymbol]) {
         node[MultilineSymbol]++;
@@ -223,6 +219,7 @@ function addMultilineCodeWidget(node, name, opts, app) {
             // Call original resizer handler
             if (onResize) {
                 onResize.apply(this, arguments);
+
             }
         };
     }
