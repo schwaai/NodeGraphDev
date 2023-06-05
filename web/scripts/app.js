@@ -848,7 +848,12 @@ export class ComfyApp {
         const app = this;
         // Load node definitions from the backend
         const defs = await api.getNodeDefs();
-        await this.#invokeExtensionsAsync("addCustomNodeDefs", defs);
+        await this.registerNodesFromDefs(defs);
+		await this.#invokeExtensionsAsync("registerCustomNodes");
+	}
+
+    async registerNodesFromDefs(defs) {
+		await this.#invokeExtensionsAsync("addCustomNodeDefs", defs);
 
         // Generate list of known widgets
         const widgets = Object.assign(
@@ -939,7 +944,7 @@ export class ComfyApp {
             node.category = nodeData.category;
         }
 
-        await this.#invokeExtensionsAsync("registerCustomNodes");
+
     }
 
     /**
@@ -1267,7 +1272,10 @@ export class ComfyApp {
 
             const def = defs[node.type];
 
-            for (const widgetNum in node.widgets) {
+            // HOTFIX: The current patch is designed to prevent the rest of the code from breaking due to primitive nodes,
+			//         and additional work is needed to consider the primitive logic in the refresh logic.
+			if(!def)
+				continue;for (const widgetNum in node.widgets) {
                 const widget = node.widgets[widgetNum]
 
                 if (widget.type == "combo" && def["input"]["required"][widget.name] !== undefined) {

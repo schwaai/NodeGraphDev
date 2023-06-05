@@ -286,15 +286,29 @@ def model_lora_keys(model, key_map={}):
 
     return key_map
 
+
 class ModelPatcher:
-    def __init__(self, model):
+    def __init__(self, model, size=0):
+        self.size = size
         self.model = model
         self.patches = []
         self.backup = {}
         self.model_options = {"transformer_options":{}}
+        self.model_size()
+
+    def model_size(self):
+        if self.size > 0:
+            return self.size
+        model_sd = self.model.state_dict()
+        size = 0
+        for k in model_sd:
+            t = model_sd[k]
+            size += t.nelement() * t.element_size()
+        self.size = size
+        return size
 
     def clone(self):
-        n = ModelPatcher(self.model)
+        n = ModelPatcher(self.model, self.size)
         n.patches = self.patches[:]
         n.model_options = copy.deepcopy(self.model_options)
         return n
@@ -607,7 +621,7 @@ def broadcast_image_to(tensor, target_batch_size, batched_number):
         return torch.cat([tensor] * batched_number, dim=0)
 
 class ControlNet:
-    def __init__(self, control_model, device=None):
+    def __init__(self, control_model, global_average_pooling=False, device=None):
         self.control_model = control_model
         self.cond_hint_original = None
         self.cond_hint = None
@@ -616,6 +630,7 @@ class ControlNet:
             device = model_management.get_torch_device()
         self.device = device
         self.previous_controlnet = None
+        self.global_average_pooling = global_average_pooling
 
     def get_control(self, x_noisy, t, cond_txt, batched_number):
         control_prev = None
@@ -651,6 +666,9 @@ class ControlNet:
                 key = 'output'
                 index = i
             x = control[i]
+            if self.global_average_pooling:
+                x = torch.mean(x, dim=(2, 3), keepdim=True).repeat(1, 1, x.shape[2], x.shape[3])
+
             x *= self.strength
             if x.dtype != output_dtype and not autocast_enabled:
                 x = x.to(output_dtype)
@@ -681,7 +699,7 @@ class ControlNet:
             self.cond_hint = None
 
     def copy(self):
-        c = ControlNet(self.control_model)
+        c = ControlNet(self.control_model, global_average_pooling=self.global_average_pooling)
         c.cond_hint_original = self.cond_hint_original
         c.strength = self.strength
         return c
@@ -729,7 +747,7 @@ def load_controlnet(ckpt_path, model=None):
                                         use_spatial_transformer=True,
                                         transformer_depth=1,
                                         context_dim=context_dim,
-                                        use_checkpoint=True,
+                                        use_checkpoint=False,
                                         legacy=False,
                                         use_fp16=use_fp16)
     else:
@@ -746,7 +764,7 @@ def load_controlnet(ckpt_path, model=None):
                                         use_linear_in_transformer=True,
                                         transformer_depth=1,
                                         context_dim=context_dim,
-                                        use_checkpoint=True,
+                                        use_checkpoint=False,
                                         legacy=False,
                                         use_fp16=use_fp16)
     if pth:
@@ -776,7 +794,11 @@ def load_controlnet(ckpt_path, model=None):
     if use_fp16:
         control_model = control_model.half()
 
-    control = ControlNet(control_model)
+    global_average_pooling = False
+    if ckpt_path.endswith("_shuffle.pth") or ckpt_path.endswith("_shuffle.safetensors") or ckpt_path.endswith("_shuffle_fp16.safetensors"): #TODO: smarter way of enabling global_average_pooling
+        global_average_pooling = True
+
+    control = ControlNet(control_model, global_average_pooling=global_average_pooling)
     return control
 
 class T2IAdapter:
@@ -1031,7 +1053,7 @@ def load_checkpoint_guess_config(ckpt_path, output_vae=True, output_clip=True, o
     }
 
     unet_config = {
-        "use_checkpoint": True,
+        "use_checkpoint": False,
         "image_size": 32,
         "out_channels": 4,
         "attention_resolutions": [
