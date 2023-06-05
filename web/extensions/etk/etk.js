@@ -56,7 +56,6 @@ function addMultilineCodeWidget(node, name, opts, app) {
         node.inputHeight = freeSpace;
     }
 
-
     const widget = {
         editor: null,
         type: "customtext",
@@ -75,30 +74,43 @@ function addMultilineCodeWidget(node, name, opts, app) {
         onNodeCreated: function () {
             this.initializeEditor();
         },
-        initializeEditor: function () {
+        initializeEditor: function (src) {
             // Create a container element for the code editor
             const editorContainer = document.createElement("div");
-            editorContainer.className = "comfy-editor-container";
+            this.editorContainer = editorContainer;
+            this.editorContainer.className = "comfy-editor-container";
 
             // Add the container element to the DOM
             document.body.appendChild(editorContainer);
 
             // Initialize the Monaco Editor
             this.editor = monaco.editor.create(editorContainer, {
-                value: this.inputEl.value,
+                value: src, // Set the initial value
                 language: "python", // Set the desired programming language
                 theme: "vs-dark", // Set the desired theme
                 // Other configuration options...
             });
 
-            // Handle value changes in the editor
-            this.editor.onDidChangeModelContent((event) => {
-                this.inputEl.value = this.editor.getValue();
+            this.editor.getModel().onDidChangeContent((event) => {
+                this.inputEl.value = this.editor.getModel().getValue();
                 // Perform any other necessary actions
             });
 
             // Hide the textarea
             this.inputEl.hidden = true;
+        },
+        changeSrc: function (src = this.inputEl.value) {
+            //this.editor.dispose();
+            //delete this.editor;
+            //this.editor = new_editor;
+            //this.editor.onDidChangeModelContent((event) => {
+                //this.inputEl.value = this.editor.getValue();
+                //this.inputEl.value = this.editor.getModel().getValue();
+                // Perform any other necessary actions
+            //}
+            //);
+            this.editor.getModal().setValue(src);
+
         },
         draw: function (ctx, _, widgetWidth, y, widgetHeight) {
             if (!this.parent.inputHeight) {
@@ -106,6 +118,9 @@ function addMultilineCodeWidget(node, name, opts, app) {
                 // Calculate it here instead
                 computeSize(node.size);
             }
+            // re hide the textarea
+            this.inputEl.hidden = true;
+            this.inputEl.style.display = "none";
             const visible = app.canvas.ds.scale > 0.5 && this.type === "customtext";
             const margin = 10;
             const elRect = ctx.canvas.getBoundingClientRect();
@@ -141,7 +156,7 @@ function addMultilineCodeWidget(node, name, opts, app) {
                     width: widgetWidth - 20 + "px",
                 });
             } else {
-                this.initializeEditor();
+                this.initializeEditor(this.inputEl.value);
             }
         },
 
@@ -238,9 +253,8 @@ app.registerExtension({
             },
         ][0];
     },
+
 });
-
-
 //
 //     // make a copy of the widget "STRING"
 //     // and change the name to "STRING2"
