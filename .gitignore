@@ -2,7 +2,6 @@ __pycache__/
 *.py[cod]
 output/
 input/
-!input/example.png
 models/
 temp/
 custom_nodes/
@@ -12,13 +11,6 @@ extra_model_paths.yaml
 /custom_nodes.disabled/
 .idea
 .venv
-/custom_nodes/ComfyUI-QualityOfLifeSuit_Omar92/src/__init__.py
-/custom_nodes/ComfyUI-QualityOfLifeSuit_Omar92/Update/__init__.py
-/web/extensions/comfyui-manager/comfyui-manager.js
-/utils/create_service.py
 /log.txt
-/web/extensions/README.md
 /saved_requests.json
-
-/.idea
 /.idea
