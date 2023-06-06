@@ -13,10 +13,13 @@ class TestExecServer(unittest.TestCase):
 
     def test_post_prompt(self):
         test_req_data = {
-            "graph_name": "test_api_00"
+            "graph_name": "basic_test",
+            "infer_uuid": "test_uuid",
         }
+        # set the json header
+        headers = {"Content-Type": "application/json"}
 
-        response = requests.post("http://127.0.0.1:3389/infer", json=json.dumps(test_req_data))
+        response = requests.post("http://127.0.0.1:3389/infer", json=test_req_data, headers=headers)
         print(response.text)
         self.assertEqual(200, response.status_code)
 
