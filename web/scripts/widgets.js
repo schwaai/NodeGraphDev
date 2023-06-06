@@ -1,143 +1,119 @@
 function getNumberDefaults(inputData, defaultStep) {
-	let defaultVal = inputData[1]["default"];
-	let { min, max, step } = inputData[1];
+    let defaultVal = inputData[1]["default"];
+    let {min, max, step} = inputData[1];
 
-	if (defaultVal == undefined) defaultVal = 0;
-	if (min == undefined) min = 0;
-	if (max == undefined) max = 2048;
-	if (step == undefined) step = defaultStep;
+    if (defaultVal == undefined) defaultVal = 0;
+    if (min == undefined) min = 0;
+    if (max == undefined) max = 2048;
+    if (step == undefined) step = defaultStep;
 
-	return { val: defaultVal, config: { min, max, step: 10.0 * step } };
+    return {val: defaultVal, config: {min, max, step: 10.0 * step}};
 }
 
 export function addValueControlWidget(node, targetWidget, defaultValue = "randomize", values) {
-    const valueControl = node.addWidget("combo", "control_after_generate", defaultValue, function (v) { }, {
+    const valueControl = node.addWidget("combo", "control_after_generate", defaultValue, function (v) {
+    }, {
         values: ["fixed", "increment", "decrement", "randomize"],
         serialize: false, // Don't include this in prompt.
     });
     valueControl.afterQueued = () => {
 
-		var v = valueControl.value;
+        var v = valueControl.value;
 
-		if (targetWidget.type == "combo" && v !== "fixed") {
-			let current_index = targetWidget.options.values.indexOf(targetWidget.value);
-			let current_length = targetWidget.options.values.length;
+        let min = targetWidget.options.min;
+        let max = targetWidget.options.max;
+        // limit to something that javascript can handle
+        max = Math.min(1125899906842624, max);
+        min = Math.max(-1125899906842624, min);
+        let range = (max - min) / (targetWidget.options.step / 10);
 
-			switch (v) {
-				case "increment":
-					current_index += 1;
-					break;
-				case "decrement":
-					current_index -= 1;
-					break;
-				case "randomize":
-					current_index = Math.floor(Math.random() * current_length);
-				default:
-					break;
-			}
-			current_index = Math.max(0, current_index);
-			current_index = Math.min(current_length - 1, current_index);
-			if (current_index >= 0) {
-				let value = targetWidget.options.values[current_index];
-				targetWidget.value = value;
-				targetWidget.callback(value);
-			}
-		} else { //number
-			let min = targetWidget.options.min;
-			let max = targetWidget.options.max;
-			// limit to something that javascript can handle
-			max = Math.min(1125899906842624, max);
-			min = Math.max(-1125899906842624, min);
-			let range = (max - min) / (targetWidget.options.step / 10);
+        //adjust values based on valueControl Behaviour
+        switch (v) {
+            case "fixed":
+                break;
+            case "increment":
+                targetWidget.value += targetWidget.options.step / 10;
+                break;
+            case "decrement":
+                targetWidget.value -= targetWidget.options.step / 10;
+                break;
+            case "randomize":
+                targetWidget.value = Math.floor(Math.random() * range) * (targetWidget.options.step / 10) + min;
+            default:
+                break;
+        }
+        /*check if values are over or under their respective
+         * ranges and set them to min or max.*/
+        if (targetWidget.value < min)
+            targetWidget.value = min;
 
-			//adjust values based on valueControl Behaviour
-			switch (v) {
-				case "fixed":
-					break;
-				case "increment":
-					targetWidget.value += targetWidget.options.step / 10;
-					break;
-				case "decrement":
-					targetWidget.value -= targetWidget.options.step / 10;
-					break;
-				case "randomize":
-					targetWidget.value = Math.floor(Math.random() * range) * (targetWidget.options.step / 10) + min;
-				default:
-					break;
-			}
-		/*check if values are over or under their respective
-		* ranges and set them to min or max.*/
-			if (targetWidget.value < min)
-				targetWidget.value = min;
-
-			if (targetWidget.value > max)
-				targetWidget.value = max;
-		}
-	}
-	return valueControl;	
+        if (targetWidget.value > max)
+            targetWidget.value = max;
+    }
+    return valueControl;
 };
 
 function seedWidget(node, inputName, inputData) {
-	const seed = ComfyWidgets.INT(node, inputName, inputData);
-	const seedControl = addValueControlWidget(node, seed.widget, "randomize");
+    const seed = ComfyWidgets.INT(node, inputName, inputData);
+    const seedControl = addValueControlWidget(node, seed.widget, "randomize");
 
-	seed.widget.linkedWidgets = [seedControl];
-	return seed;
+    seed.widget.linkedWidgets = [seedControl];
+    return seed;
 }
 
 const MultilineSymbol = Symbol();
 const MultilineResizeSymbol = Symbol();
 
-function addMultilineWidget(node, name, opts, app) {
-	const MIN_SIZE = 50;
+export function addMultilineWidget(node, name, opts, app) {
+    const MIN_SIZE = 50;
 
-	function computeSize(size) {
-		if (node.widgets[0].last_y == null) return;
+    function computeSize(size) {
+        if (node.widgets[0].last_y == null) return;
 
-		let y = node.widgets[0].last_y;
-		let freeSpace = size[1] - y;
+        let y = node.widgets[0].last_y;
+        let freeSpace = size[1] - y;
 
-		// Compute the height of all non customtext widgets
-		let widgetHeight = 0;
-		const multi = [];
-		for (let i = 0; i < node.widgets.length; i++) {
-			const w = node.widgets[i];
-			if (w.type === "customtext") {
-				multi.push(w);
-			} else {
-				if (w.computeSize) {
-					widgetHeight += w.computeSize()[1] + 4;
-				} else {
-					widgetHeight += LiteGraph.NODE_WIDGET_HEIGHT + 4;
-				}
-			}
-		}
+        // Compute the height of all non customtext widgets
+        let widgetHeight = 0;
+        const multi = [];
+        for (let i = 0; i < node.widgets.length; i++) {
+            const w = node.widgets[i];
+            if (w.type === "customtext") {
+                multi.push(w);
+            } else {
+                if (w.computeSize) {
+                    widgetHeight += w.computeSize()[1] + 4;
+                } else {
+                    widgetHeight += LiteGraph.NODE_WIDGET_HEIGHT + 4;
+                }
+            }
+        }
 
-		// See how large each text input can be
-		freeSpace -= widgetHeight;
-		freeSpace /= multi.length;
+        // See how large each text input can be
+        freeSpace -= widgetHeight;
+        freeSpace /= multi.length;
 
-		if (freeSpace < MIN_SIZE) {
-			// There isnt enough space for all the widgets, increase the size of the node
-			freeSpace = MIN_SIZE;
-			node.size[1] = y + widgetHeight + freeSpace * multi.length;
-			node.graph.setDirtyCanvas(true);
-		}
+        if (freeSpace < MIN_SIZE) {
+            // There isnt enough space for all the widgets, increase the size of the node
+            freeSpace = MIN_SIZE;
+            node.size[1] = y + widgetHeight + freeSpace * multi.length;
+            node.graph.setDirtyCanvas(true);
+        }
 
-		// Position each of the widgets
-		for (const w of node.widgets) {
-			w.y = y;
-			if (w.type === "customtext") {
-				y += freeSpace;
-			} else if (w.computeSize) {
-				y += w.computeSize()[1] + 4;
-			} else {
-				y += LiteGraph.NODE_WIDGET_HEIGHT + 4;
-			}
-		}
+        // Position each of the widgets
+        for (const w of node.widgets) {
+            w.y = y;
+            if (w.type === "customtext") {
+                y += freeSpace;
+            } else if (w.computeSize) {
+                y += w.computeSize()[1] + 4;
+            } else {
+                y += LiteGraph.NODE_WIDGET_HEIGHT + 4;
+            }
+        }
 
-		node.inputHeight = freeSpace;
-	}
+        node.inputHeight = freeSpace;
+    }
 
 	const widget = {
 		type: "customtext",
@@ -155,16 +131,24 @@ function addMultilineWidget(node, name, opts, app) {
 				computeSize(node.size);
 			}
 			const visible = app.canvas.ds.scale > 0.5 && this.type === "customtext";
-			const t = ctx.getTransform();
 			const margin = 10;
+			const elRect = ctx.canvas.getBoundingClientRect();
+			const transform = new DOMMatrix()
+				.scaleSelf(elRect.width / ctx.canvas.width, elRect.height / ctx.canvas.height)
+				.multiplySelf(ctx.getTransform())
+				.translateSelf(margin, margin + y);
+
 			Object.assign(this.inputEl.style, {
-				left: `${t.a * margin + t.e}px`,
-				top: `${t.d * (y + widgetHeight - margin - 3) + t.f}px`,
-				width: `${(widgetWidth - margin * 2 - 3) * t.a}px`,
-				height: `${(this.parent.inputHeight - margin * 2 - 4) * t.d}px`,
+				transformOrigin: "0 0",
+				transform: transform,
+				left: "0px",
+				top: "0px",
+				width: `${widgetWidth - (margin * 2)}px`,
+				height: `${this.parent.inputHeight - (margin * 2)}px`,
 				position: "absolute",
-				zIndex: 1,
-				fontSize: `${t.d * 10.0}px`,
+				background: (!node.color)?'':node.color,
+				color: (!node.color)?'':'white',
+				zIndex: app.graph._nodes.indexOf(node),
 			});
 			this.inputEl.hidden = !visible;
 		},
@@ -181,231 +165,241 @@ function addMultilineWidget(node, name, opts, app) {
 	widget.parent = node;
 	document.body.appendChild(widget.inputEl);
 
-	node.addCustomWidget(widget);
+    node.addCustomWidget(widget);
 
-	app.canvas.onDrawBackground = function () {
-		// Draw node isnt fired once the node is off the screen
-		// if it goes off screen quickly, the input may not be removed
-		// this shifts it off screen so it can be moved back if the node is visible.
-		for (let n in app.graph._nodes) {
-			n = graph._nodes[n];
-			for (let w in n.widgets) {
-				let wid = n.widgets[w];
-				if (Object.hasOwn(wid, "inputEl")) {
-					wid.inputEl.style.left = -8000 + "px";
-					wid.inputEl.style.position = "absolute";
-				}
-			}
-		}
-	};
+    app.canvas.onDrawBackground = function () {
+        // Draw node isnt fired once the node is off the screen
+        // if it goes off screen quickly, the input may not be removed
+        // this shifts it off screen so it can be moved back if the node is visible.
+        for (let n in app.graph._nodes) {
+            n = graph._nodes[n];
+            for (let w in n.widgets) {
+                let wid = n.widgets[w];
+                if (Object.hasOwn(wid, "inputEl")) {
+                    wid.inputEl.style.left = -8000 + "px";
+                    wid.inputEl.style.position = "absolute";
+                }
+            }
+        }
+    };
 
-	node.onRemoved = function () {
-		// When removing this node we need to remove the input from the DOM
-		for (let y in this.widgets) {
-			if (this.widgets[y].inputEl) {
-				this.widgets[y].inputEl.remove();
-			}
-		}
-	};
+    node.onRemoved = function () {
+        // When removing this node we need to remove the input from the DOM
+        for (let y in this.widgets) {
+            if (this.widgets[y].inputEl) {
+                this.widgets[y].inputEl.remove();
+            }
+        }
+    };
 
-	widget.onRemove = () => {
-		widget.inputEl?.remove();
+    widget.onRemove = () => {
+        widget.inputEl?.remove();
 
-		// Restore original size handler if we are the last
-		if (!--node[MultilineSymbol]) {
-			node.onResize = node[MultilineResizeSymbol];
-			delete node[MultilineSymbol];
-			delete node[MultilineResizeSymbol];
-		}
-	};
+        // Restore original size handler if we are the last
+        if (!--node[MultilineSymbol]) {
+            node.onResize = node[MultilineResizeSymbol];
+            delete node[MultilineSymbol];
+            delete node[MultilineResizeSymbol];
+        }
+    };
 
-	if (node[MultilineSymbol]) {
-		node[MultilineSymbol]++;
-	} else {
-		node[MultilineSymbol] = 1;
-		const onResize = (node[MultilineResizeSymbol] = node.onResize);
+    if (node[MultilineSymbol]) {
+        node[MultilineSymbol]++;
+    } else {
+        node[MultilineSymbol] = 1;
+        const onResize = (node[MultilineResizeSymbol] = node.onResize);
 
-		node.onResize = function (size) {
-			computeSize(size);
+        node.onResize = function (size) {
+            computeSize(size);
 
-			// Call original resizer handler
-			if (onResize) {
-				onResize.apply(this, arguments);
-			}
-		};
-	}
+            // Call original resizer handler
+            if (onResize) {
+                onResize.apply(this, arguments);
+            }
+        };
+    }
 
-	return { minWidth: 400, minHeight: 200, widget };
+    return {minWidth: 400, minHeight: 200, widget};
 }
 
 export const ComfyWidgets = {
-	"INT:seed": seedWidget,
-	"INT:noise_seed": seedWidget,
-	FLOAT(node, inputName, inputData) {
-		const { val, config } = getNumberDefaults(inputData, 0.5);
-		return { widget: node.addWidget("number", inputName, val, () => {}, config) };
-	},
-	INT(node, inputName, inputData) {
-		const { val, config } = getNumberDefaults(inputData, 1);
-		Object.assign(config, { precision: 0 });
-		return {
-			widget: node.addWidget(
-				"number",
-				inputName,
-				val,
-				function (v) {
-					const s = this.options.step / 10;
-					this.value = Math.round(v / s) * s;
-				},
-				config
-			),
-		};
-	},
-	STRING(node, inputName, inputData, app) {
-		const defaultVal = inputData[1].default || "";
-		const multiline = !!inputData[1].multiline;
+    "INT:seed": seedWidget,
+    "INT:noise_seed": seedWidget,
+    FLOAT(node, inputName, inputData) {
+        const {val, config} = getNumberDefaults(inputData, 0.5);
+        return {
+            widget: node.addWidget("number", inputName, val, () => {
+            }, config)
+        };
+    },
+    INT(node, inputName, inputData) {
+        const {val, config} = getNumberDefaults(inputData, 1);
+        Object.assign(config, {precision: 0});
+        return {
+            widget: node.addWidget(
+                "number",
+                inputName,
+                val,
+                function (v) {
+                    const s = this.options.step / 10;
+                    this.value = Math.round(v / s) * s;
+                },
+                config
+            ),
+        };
+    },
+    STRING(node, inputName, inputData, app) {
+        const defaultVal = inputData[1].default || "";
+        const multiline = !!inputData[1].multiline;
 
-		if (multiline) {
-			return addMultilineWidget(node, inputName, { defaultVal, ...inputData[1] }, app);
-		} else {
-			return { widget: node.addWidget("text", inputName, defaultVal, () => {}, {}) };
-		}
-	},
-	COMBO(node, inputName, inputData) {
-		const type = inputData[0];
-		let defaultValue = type[0];
-		if (inputData[1] && inputData[1].default) {
-			defaultValue = inputData[1].default;
-		}
-		return { widget: node.addWidget("combo", inputName, defaultValue, () => {}, { values: type }) };
-	},
-	IMAGEUPLOAD(node, inputName, inputData, app) {
-		const imageWidget = node.widgets.find((w) => w.name === "image");
-		let uploadWidget;
+        if (multiline) {
+            return addMultilineWidget(node, inputName, {defaultVal, ...inputData[1]}, app);
+        } else {
+            return {
+                widget: node.addWidget("text", inputName, defaultVal, () => {
+                }, {})
+            };
+        }
+    },
+    COMBO(node, inputName, inputData) {
+        const type = inputData[0];
+        let defaultValue = type[0];
+        if (inputData[1] && inputData[1].default) {
+            defaultValue = inputData[1].default;
+        }
+        return {
+            widget: node.addWidget("combo", inputName, defaultValue, () => {
+            }, {values: type})
+        };
+    },
+    IMAGEUPLOAD(node, inputName, inputData, app) {
+        const imageWidget = node.widgets.find((w) => w.name === "image");
+        let uploadWidget;
 
-		function showImage(name) {
-			// Position the image somewhere sensible
-			if (!node.imageOffset) {
-				node.imageOffset = uploadWidget.last_y ? uploadWidget.last_y + 25 : 75;
-			}
+        function showImage(name) {
+            // Position the image somewhere sensible
+            if (!node.imageOffset) {
+                node.imageOffset = uploadWidget.last_y ? uploadWidget.last_y + 25 : 75;
+            }
 
-			const img = new Image();
-			img.onload = () => {
-				node.imgs = [img];
-				app.graph.setDirtyCanvas(true);
-			};
-			img.src = `/view?filename=${name}&type=input`;
-		}
+            const img = new Image();
+            img.onload = () => {
+                node.imgs = [img];
+                app.graph.setDirtyCanvas(true);
+            };
+            img.src = `/view?filename=${name}&type=input`;
+        }
 
-		// Add our own callback to the combo widget to render an image when it changes
-		const cb = node.callback;
-		imageWidget.callback = function () {
-			showImage(imageWidget.value);
-			if (cb) {
-				return cb.apply(this, arguments);
-			}
-		};
+        // Add our own callback to the combo widget to render an image when it changes
+        const cb = node.callback;
+        imageWidget.callback = function () {
+            showImage(imageWidget.value);
+            if (cb) {
+                return cb.apply(this, arguments);
+            }
+        };
 
-		// On load if we have a value then render the image
-		// The value isnt set immediately so we need to wait a moment
-		// No change callbacks seem to be fired on initial setting of the value
-		requestAnimationFrame(() => {
-			if (imageWidget.value) {
-				showImage(imageWidget.value);
-			}
-		});
+        // On load if we have a value then render the image
+        // The value isnt set immediately so we need to wait a moment
+        // No change callbacks seem to be fired on initial setting of the value
+        requestAnimationFrame(() => {
+            if (imageWidget.value) {
+                showImage(imageWidget.value);
+            }
+        });
 
-		async function uploadFile(file, updateNode) {
-			try {
-				// Wrap file in formdata so it includes filename
-				const body = new FormData();
-				body.append("image", file);
-				const resp = await fetch("/upload/image", {
-					method: "POST",
-					body,
-				});
+        async function uploadFile(file, updateNode) {
+            try {
+                // Wrap file in formdata so it includes filename
+                const body = new FormData();
+                body.append("image", file);
+                const resp = await fetch("/upload/image", {
+                    method: "POST",
+                    body,
+                });
 
-				if (resp.status === 200) {
-					const data = await resp.json();
-					// Add the file as an option and update the widget value
-					if (!imageWidget.options.values.includes(data.name)) {
-						imageWidget.options.values.push(data.name);
-					}
+                if (resp.status === 200) {
+                    const data = await resp.json();
+                    // Add the file as an option and update the widget value
+                    if (!imageWidget.options.values.includes(data.name)) {
+                        imageWidget.options.values.push(data.name);
+                    }
 
-					if (updateNode) {
-						showImage(data.name);
+                    if (updateNode) {
+                        showImage(data.name);
 
-						imageWidget.value = data.name;
-					}
-				} else {
-					alert(resp.status + " - " + resp.statusText);
-				}
-			} catch (error) {
-				alert(error);
-			}
-		}
+                        imageWidget.value = data.name;
+                    }
+                } else {
+                    alert(resp.status + " - " + resp.statusText);
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
 
-		const fileInput = document.createElement("input");
-		Object.assign(fileInput, {
-			type: "file",
-			accept: "image/jpeg,image/png,image/webp",
-			style: "display: none",
-			onchange: async () => {
-				if (fileInput.files.length) {
-					await uploadFile(fileInput.files[0], true);
-				}
-			},
-		});
-		document.body.append(fileInput);
+        const fileInput = document.createElement("input");
+        Object.assign(fileInput, {
+            type: "file",
+            accept: "image/jpeg,image/png,image/webp",
+            style: "display: none",
+            onchange: async () => {
+                if (fileInput.files.length) {
+                    await uploadFile(fileInput.files[0], true);
+                }
+            },
+        });
+        document.body.append(fileInput);
 
-		// Create the button widget for selecting the files
-		uploadWidget = node.addWidget("button", "choose file to upload", "image", () => {
-			fileInput.click();
-		});
-		uploadWidget.serialize = false;
+        // Create the button widget for selecting the files
+        uploadWidget = node.addWidget("button", "choose file to upload", "image", () => {
+            fileInput.click();
+        });
+        uploadWidget.serialize = false;
 
-		// Add handler to check if an image is being dragged over our node
-		node.onDragOver = function (e) {
-			if (e.dataTransfer && e.dataTransfer.items) {
-				const image = [...e.dataTransfer.items].find((f) => f.kind === "file" && f.type.startsWith("image/"));
-				return !!image;
-			}
+        // Add handler to check if an image is being dragged over our node
+        node.onDragOver = function (e) {
+            if (e.dataTransfer && e.dataTransfer.items) {
+                const image = [...e.dataTransfer.items].find((f) => f.kind === "file" && f.type.startsWith("image/"));
+                return !!image;
+            }
 
-			return false;
-		};
+            return false;
+        };
 
-		// On drop upload files
-		node.onDragDrop = function (e) {
-			console.log("onDragDrop called");
-			let handled = false;
-			for (const file of e.dataTransfer.files) {
-				if (file.type.startsWith("image/")) {
-					uploadFile(file, !handled); // Dont await these, any order is fine, only update on first one
-					handled = true;
-				}
-			}
+        // On drop upload files
+        node.onDragDrop = function (e) {
+            console.log("onDragDrop called");
+            let handled = false;
+            for (const file of e.dataTransfer.files) {
+                if (file.type.startsWith("image/")) {
+                    uploadFile(file, !handled); // Dont await these, any order is fine, only update on first one
+                    handled = true;
+                }
+            }
 
-			return handled;
-		};
+            return handled;
+        };
 
-		return { widget: uploadWidget };
-	},
-	RANDOMFLOAT(node, inputName, inputData) {
-	// Create the widget with initial random value
-	const widget = node.addWidget("number", inputName, Math.random(), () => {}, {});
+        return {widget: uploadWidget};
+    },
+    RANDOMFLOAT(node, inputName, inputData) {
+        // Create the widget with initial random value
+        const widget = node.addWidget("number", inputName, Math.random(), () => {
+        }, {});
 
-	// Override the getter for the value to always return a random number
-	Object.defineProperty(widget, 'value', {
-		get() {
-			return Math.random();
-		},
-		set() {
-			// Ignore any attempts to set the value
-		},
-		enumerable: true,
-		configurable: true
-	});
-	return { widget };
-	},
+        // Override the getter for the value to always return a random number
+        Object.defineProperty(widget, 'value', {
+            get() {
+                return Math.random();
+            },
+            set() {
+                // Ignore any attempts to set the value
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return {widget};
+    },
 
 };

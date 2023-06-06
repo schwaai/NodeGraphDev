@@ -1,4 +1,4 @@
-class ExecUI extends EventTarget {
+class ComfyApi extends EventTarget {
 	#registered = new Set();
 
 	constructor() {
@@ -16,7 +16,7 @@ class ExecUI extends EventTarget {
 	#pollQueue() {
 		setInterval(async () => {
 			try {
-				const resp = await fetch("/exec");
+				const resp = await fetch("/prompt");
 				const status = await resp.json();
 				this.dispatchEvent(new CustomEvent("status", { detail: status }));
 			} catch (error) {
@@ -35,7 +35,7 @@ class ExecUI extends EventTarget {
 		}
 
 		let opened = false;
-		let existingSession = sessionStorage["Comfy.SessionId"] || "";
+		let existingSession = window.name;
 		if (existingSession) {
 			existingSession = "?clientId=" + existingSession;
 		}
@@ -75,7 +75,7 @@ class ExecUI extends EventTarget {
 					case "status":
 						if (msg.data.sid) {
 							this.clientId = msg.data.sid;
-							sessionStorage["Comfy.SessionId"] = this.clientId;
+							window.name = this.clientId;
 						}
 						this.dispatchEvent(new CustomEvent("status", { detail: msg.data.status }));
 						break;
@@ -87,6 +87,12 @@ class ExecUI extends EventTarget {
 						break;
 					case "executed":
 						this.dispatchEvent(new CustomEvent("executed", { detail: msg.data }));
+						break;
+					case "execution_start":
+						this.dispatchEvent(new CustomEvent("execution_start", { detail: msg.data }));
+						break;
+					case "execution_error":
+						this.dispatchEvent(new CustomEvent("execution_error", { detail: msg.data }));
 						break;
 					default:
 						if (this.#registered.has(msg.type)) {
@@ -140,7 +146,7 @@ class ExecUI extends EventTarget {
 	 * @param {number} number The index at which to queue the prompt, passing -1 will insert the prompt at the front of the queue
 	 * @param {object} prompt The prompt data to queue
 	 */
-	async queueExec(number, { output, workflow }) {
+	async queuePrompt(number, { output, workflow }) {
 		const body = {
 			client_id: this.clientId,
 			prompt: output,
@@ -153,7 +159,7 @@ class ExecUI extends EventTarget {
 			body.number = number;
 		}
 
-		const res = await fetch("/exec", {
+		const res = await fetch("/prompt", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -163,7 +169,7 @@ class ExecUI extends EventTarget {
 
 		if (res.status !== 200) {
 			throw {
-				response: await res.text(),
+				response: await res.json(),
 			};
 		}
 	}
@@ -260,4 +266,4 @@ class ExecUI extends EventTarget {
 	}
 }
 
-export const api = new ExecUI();
+export const api = new ComfyApi();

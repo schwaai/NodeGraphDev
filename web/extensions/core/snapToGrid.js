@@ -27,7 +27,7 @@ app.registerExtension({
 		app.canvas.onNodeMoved = function (node) {
 			const r = onNodeMoved?.apply(this, arguments);
 
-			if (app.shiftDown) {
+			if (!app.shiftDown) {
 				// Ensure all selected nodes are realigned
 				for (const id in this.selected_nodes) {
 					this.selected_nodes[id].alignToGrid();
@@ -42,7 +42,7 @@ app.registerExtension({
 		app.graph.onNodeAdded = function (node) {
 			const onResize = node.onResize;
 			node.onResize = function () {
-				if (app.shiftDown) {
+				if (!app.shiftDown) {
 					const w = LiteGraph.CANVAS_GRID_SIZE * Math.round(node.size[0] / LiteGraph.CANVAS_GRID_SIZE);
 					const h = LiteGraph.CANVAS_GRID_SIZE * Math.round(node.size[1] / LiteGraph.CANVAS_GRID_SIZE);
 					node.size[0] = w;
@@ -56,7 +56,7 @@ app.registerExtension({
 		// Draw a preview of where the node will go if holding shift and the node is selected
 		const origDrawNode = LGraphCanvas.prototype.drawNode;
 		LGraphCanvas.prototype.drawNode = function (node, ctx) {
-			if (app.shiftDown && this.node_dragged && node.id in this.selected_nodes) {
+			if (!app.shiftDown && this.node_dragged && node.id in this.selected_nodes) {
 				const x = LiteGraph.CANVAS_GRID_SIZE * Math.round(node.pos[0] / LiteGraph.CANVAS_GRID_SIZE);
 				const y = LiteGraph.CANVAS_GRID_SIZE * Math.round(node.pos[1] / LiteGraph.CANVAS_GRID_SIZE);
 
