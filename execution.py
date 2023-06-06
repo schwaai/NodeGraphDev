@@ -194,8 +194,9 @@ def recursive_execute(server, prompt, outputs, current_item, extra_data, execute
     for l1 in output_data:
         for l2 in l1:
             if isinstance(l2, dict):
-                for k, v in l2["result"][0].items():
-                    results_kv[k] = v
+                if "result" in l2:
+                    for k, v in l2["result"][0].items():
+                        results_kv[k] = v
 
     if not prompt_id in main.server_obj_holder[0]["executed"]:
         main.server_obj_holder[0]["executed"][prompt_id] = {}

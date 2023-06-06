@@ -36,6 +36,7 @@ def prompt_worker(q, server):
     while True:
         for i in range(4):
             item, item_id = q.get()
+            #print(f"prompt_worker: {item}")
             e.execute(item[2], item[1], item[3], item[4])
             q.task_done(item_id, e.outputs_ui)
             if i == 0:
@@ -102,7 +103,12 @@ if __name__ == "__main__":
     server.add_routes()
     hijack_progress(server)
 
-    threading.Thread(target=prompt_worker, daemon=True, args=(main_queue, server,)).start()
+    worker_thread1 = threading.Thread(target=prompt_worker, daemon=True, args=(main_queue, server,))
+    #worker_thread2 = threading.Thread(target=prompt_worker, daemon=True, args=(main_queue, server,))
+    worker_thread1.name = "PromptWorker1"
+    #worker_thread2.name = "PromptWorker2"
+    worker_thread1.start()
+    #worker_thread2.start()
 
     if args.output_directory:
         output_dir = os.path.abspath(args.output_directory)

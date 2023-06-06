@@ -450,6 +450,9 @@ class PromptServer():
                             if source_k == target_v["inputs"]["key"]:
                                 target_v["inputs"]["hidden_override"] = source_v
                                 target_v["inputs"]["uuid"] = infer_uuid
+                            if target_v["class_type"] == "SetApiResultKV":
+                                if source_k == target_v["inputs"]["key"]:
+                                    target_v["inputs"]["uuid"] = infer_uuid
 
 
             # create an awaitable for the json
@@ -457,36 +460,26 @@ class PromptServer():
             await_able.set_result(saved_request_json)
             request.json = lambda: await_able
 
-            # now await /prompt
             result = await post_prompt(request)
-
-            # /prompt just checks things and then puts it in the queue
-            # so somehow we need to know when it's done
-            prompt = saved_request_json["prompt"]
-            valid = execution.validate_prompt(prompt)
             pid = json.loads(result.body)["prompt_id"]
-            number = json.loads(result.body)["number"]
-            e = execution.PromptExecutor(self)
 
-            e.execute(prompt,
-                      pid,
-                      {},
-                      [number])
+            # this is the callback that will be called when /prompt is done
+            async def wait_for_prompt_and_return_result(prompt_id):
+                while prompt_id not in main.server_obj_holder[0]['executed']:
+                    await asyncio.sleep(0.01)
 
+                result = main.server_obj_holder[0]['executed'][prompt_id]
+                return result
 
+            # schedule the task to wait for prompt result
+            task = asyncio.create_task(wait_for_prompt_and_return_result(pid))
 
-
-
-
-
-
+            # wait for the result
+            result = await task
             return web.json_response(result, status=200)
 
-        async def wait_for_prompt(prompt_id):
-            while prompt_id not in main.server_obj_holder[0]['executed']:
-                await asyncio.sleep(0.01)
+        return
 
-            return main.server_obj_holder[0]['executed'][prompt_id]
 
         @routes.post("/queue")
         async def post_queue(request):

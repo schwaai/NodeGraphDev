@@ -15,6 +15,8 @@ class TestExecServer(unittest.TestCase):
         test_req_data = {
             "graph_name": "basic_test",
             "infer_uuid": "test_uuid",
+            "client_prompt": "test prompt",
+
         }
         # set the json header
         headers = {"Content-Type": "application/json"}
