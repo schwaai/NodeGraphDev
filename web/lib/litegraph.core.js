@@ -6063,7 +6063,7 @@ LGraphNode.prototype.executeAction = function(action)
 							this.graph.beforeChange();
                             this.node_dragged = node;
                         }
-                        if (!node.is_selected) this.processNodeSelected(node, e);
+                        this.processNodeSelected(node, e);
                     } else { // double-click
                         /**
                          * Don't call the function if the block is already selected.
@@ -6121,26 +6121,14 @@ LGraphNode.prototype.executeAction = function(action)
 
 					clicking_canvas_bg = true;
 				}
-              // HOGE
-              if (!e.altKey) {
-                this.dragging_rectangle = new Float32Array(4);
-                this.dragging_rectangle[0] = e.canvasX;
-                this.dragging_rectangle[1] = e.canvasY;
-                this.dragging_rectangle[2] = 1;
-                this.dragging_rectangle[3] = 1;
-                skip_action = true;
-              }
             }
 
             if (!skip_action && clicking_canvas_bg && this.allow_dragcanvas) {
             	//console.log("pointerevents: dragging_canvas start");
-            	// this.dragging_canvas = true; // HOGE
+            	this.dragging_canvas = true;
             }
             
         } else if (e.which == 2) {
-            this.dragging_canvas = true; // HOGE
-            LiteGraph.middle_click_slot_add_default_node = false; // HOGE
-
             //middle button
         	
 			if (LiteGraph.middle_click_slot_add_default_node){
@@ -6647,7 +6635,7 @@ LGraphNode.prototype.executeAction = function(action)
 							} //out of the visible area
 							to_select.push(nodeX);
 						}
-						if (true || to_select.length) { // HOGE
+						if (to_select.length) {
 							this.selectNodes(to_select,e.shiftKey); // add to selection with shift
 						}
 					}else{
@@ -7310,6 +7298,10 @@ LGraphNode.prototype.executeAction = function(action)
         if (this.onShowNodePanel) {
             this.onShowNodePanel(n);
         }
+		else
+		{
+			this.showShowNodePanel(n);
+		}
 
         if (this.onNodeDblClicked) {
             this.onNodeDblClicked(n);
@@ -8111,15 +8103,11 @@ LGraphNode.prototype.executeAction = function(action)
 		bgcolor = bgcolor || LiteGraph.NODE_DEFAULT_COLOR;
 		hovercolor = hovercolor || "#555";
 		textcolor = textcolor || LiteGraph.NODE_TEXT_COLOR;
-		var pos = this.ds.convertOffsetToCanvas(this.graph_mouse);
-		var hover = LiteGraph.isInsideRectangle( pos[0], pos[1], x,y,w,h );
-		pos = this.last_click_position ? [this.last_click_position[0], this.last_click_position[1]] : null;
-        if(pos) {
-            var rect = this.canvas.getBoundingClientRect();
-            pos[0] -= rect.left;
-            pos[1] -= rect.top;
-        }
-		var clicked = pos && LiteGraph.isInsideRectangle( pos[0], pos[1], x,y,w,h );
+		var yFix = y + LiteGraph.NODE_TITLE_HEIGHT + 2;	// fix the height with the title
+		var pos = this.mouse;
+		var hover = LiteGraph.isInsideRectangle( pos[0], pos[1], x,yFix,w,h );
+		pos = this.last_click_position;
+		var clicked = pos && LiteGraph.isInsideRectangle( pos[0], pos[1], x,yFix,w,h );
 
 		ctx.fillStyle = hover ? hovercolor : bgcolor;
 		if(clicked)
@@ -12959,10 +12947,6 @@ LGraphNode.prototype.executeAction = function(action)
                     content: "Properties",
                     has_submenu: true,
                     callback: LGraphCanvas.onShowMenuNodeProperties
-                },
-                {
-                    content: "Properties Panel",
-                    callback: function(item, options, e, menu, node) { LGraphCanvas.active_canvas.showShowNodePanel(node) }
                 },
                 null,
                 {
