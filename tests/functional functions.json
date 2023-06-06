@@ -1,6 +1,6 @@
 {
-  "last_node_id": 32,
-  "last_link_id": 20,
+  "last_node_id": 34,
+  "last_link_id": 21,
   "nodes": [
     {
       "id": 20,
@@ -11,7 +11,7 @@
       ],
       "size": {
         "0": 210,
-        "1": 75.99996948242188
+        "1": 80
       },
       "flags": {},
       "order": 11,
@@ -33,7 +33,10 @@
       ],
       "properties": {
         "Node name for S&R": "ShowText"
-      }
+      },
+      "widgets_values": [
+        ""
+      ]
     },
     {
       "id": 22,
@@ -43,8 +46,8 @@
         1837
       ],
       "size": {
-        "0": 250.5481414794922,
-        "1": 443.34185791015625
+        "0": 250,
+        "1": 440
       },
       "flags": {},
       "order": 10,
@@ -66,7 +69,10 @@
       ],
       "properties": {
         "Node name for S&R": "ShowText"
-      }
+      },
+      "widgets_values": [
+        "common_ksampler\nget_fonts\nget_image_size\nrgba_per_channel_norm\ntorch_image_show\nCLIPTextEncode\nCLIPTextEncodeAdvanced\nCheckpointLoaderSimple\nEmptyLatentImage\nExecWidget\nImageBC\nImageDistanceMask\nKSampler\nLoadImage\nPadToMatch\nPreviewImageTest\nPromptTemplate\nQuantize\nRGBA_MOD\nSaveImage\nSelectFromRGBSimilarity\nStackImages\nTextRender\nTinyTxtToImg\nVAEDecode\nVAEEncode\nrgba_lower_clip\nrgba_merge\nrgba_split\nrgba_upper_clip\nselect_from_batch"
+      ]
     },
     {
       "id": 24,
@@ -390,7 +396,7 @@
         {
           "name": "text",
           "type": "STRING",
-          "link": 16,
+          "link": 21,
           "widget": {
             "name": "text",
             "config": [
@@ -617,72 +623,6 @@
       }
     },
     {
-      "id": 32,
-      "type": "Text box",
-      "pos": [
-        -2146,
-        -742
-      ],
-      "size": {
-        "0": 633.1998291015625,
-        "1": 668.337890625
-      },
-      "flags": {
-        "collapsed": false
-      },
-      "order": 4,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "STRING",
-          "type": "STRING",
-          "links": [],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "title": "text",
-      "properties": {
-        "Node name for S&R": "Text box"
-      },
-      "widgets_values": [
-        "\nimport requests\n\nclass HttpPost:\n    @classmethod\n    def INPUT_TYPES(cls):\n        return {\n            \"url\": (\"STRING\",),\n            \"data\": (\"STRING\",),\n            \"headers\": (\"OBJECT\", \"default\": {}),\n        }\n\n    RETURN_TYPES = (\"OBJECT\",)\n    FUNCTION = \"http_post\"\n\n    CATEGORY = \"network\"\n\n    def http_post(self, url, data, headers={}):\n        \"\"\"\n        >>> HttpPost().http_post('http://httpbin.org/post', {'name': 'John', 'age': 30})\n        {\n            'url': 'http://httpbin.org/post',\n            'args': {},\n            'data': '',\n            'json': {'name': 'John', 'age': 30},\n            'files': {},\n            'form': {},\n            'headers': {\n                'Accept-Encoding': 'gzip, deflate',\n                'Content-Length': '23',\n                'Content-Type': 'application/json',\n                'Host': 'httpbin.org',\n                'User-Agent': 'python-requests/2.25.0',\n                'X-Amzn-Trace-Id': 'Root=1-6119f9b8-0826edaa60b0525b42db2a32'\n            },\n            'json': {'name': 'John', 'age': 30},\n            'method': 'POST',\n            'origin': 'YOUR_IP_ADDRESS',\n            'url': 'http://httpbin.org/post'\n        }\n        \"\"\"\n        response = requests.post(url, data, headers=headers)\n        return (response.json(),)\n"
-      ]
-    },
-    {
-      "id": 28,
-      "type": "Text box",
-      "pos": [
-        -1736,
-        71
-      ],
-      "size": {
-        "0": 558.9134521484375,
-        "1": 618.912841796875
-      },
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "STRING",
-          "type": "STRING",
-          "links": [
-            16
-          ],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "title": "node exmaple",
-      "properties": {
-        "Node name for S&R": "Text box"
-      },
-      "widgets_values": [
-        "class PromptTemplate:\n    \"\"\"replaces the text in the given text string with a given other text at some key positions\"\"\"\n\n    @classmethod\n    def INPUT_TYPES(s):\n        return {\"required\":\n            {\n                \"text\": (\"STRING\", {\"multiline\": True}),\n                \"replacement\": (\"STRING\", {\"multiline\": True}),\n                \"key1\": (\"STRING\", {\"multiline\": False}),\n            }\n        }\n\n    CATEGORY = \"text\"\n    RETURN_TYPES = (\"STRING\",)\n    FUNCTION = \"prompt_template_handler\"\n\n    def prompt_template_handler(self, text: str, replacement, key1):\n        \"\"\"\n        >>> PromptTemplate().prompt_template_handler(\"hello world\", \"universe\", \"world\")\n        'hello universe'\n        \"\"\"\n        return (text.replace(key1, replacement),)\n\nclass LatentCrop:\n    @classmethod\n    def INPUT_TYPES(s):\n        return {\"required\": { \"samples\": (\"LATENT\",),\n                              \"width\": (\"INT\", {\"default\": 512, \"min\": 64, \"max\": MAX_RESOLUTION, \"step\": 8}),\n                              \"height\": (\"INT\", {\"default\": 512, \"min\": 64, \"max\": MAX_RESOLUTION, \"step\": 8}),\n                              \"x\": (\"INT\", {\"default\": 0, \"min\": 0, \"max\": MAX_RESOLUTION, \"step\": 8}),\n                              \"y\": (\"INT\", {\"default\": 0, \"min\": 0, \"max\": MAX_RESOLUTION, \"step\": 8}),\n                              }}\n    RETURN_TYPES = (\"LATENT\",)\n    FUNCTION = \"crop\"\n\n    CATEGORY = \"latent/transform\"\n\n    def crop(self, samples, width, height, x, y):\n        s = samples.copy()\n        samples = samples['samples']\n        x =  x // 8\n        y = y // 8\n\n        #enfonce minimum size of 64\n        if x > (samples.shape[3] - 8):\n            x = samples.shape[3] - 8\n        if y > (samples.shape[2] - 8):\n            y = samples.shape[2] - 8\n\n        new_height = height // 8\n        new_width = width // 8\n        to_x = new_width + x\n        to_y = new_height + y\n        s['samples'] = samples[:,:,y:to_y, x:to_x]\n        return (s,)\n\n\n"
-      ]
-    },
-    {
       "id": 7,
       "type": "Text box",
       "pos": [
@@ -696,7 +636,7 @@
       "flags": {
         "collapsed": true
       },
-      "order": 6,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -729,7 +669,7 @@
       "flags": {
         "collapsed": true
       },
-      "order": 7,
+      "order": 5,
       "mode": 0,
       "outputs": [
         {
@@ -761,7 +701,7 @@
       "flags": {
         "collapsed": true
       },
-      "order": 8,
+      "order": 6,
       "mode": 0,
       "outputs": [
         {
@@ -793,7 +733,7 @@
       "flags": {
         "collapsed": true
       },
-      "order": 9,
+      "order": 7,
       "mode": 0,
       "outputs": [
         {
@@ -810,6 +750,68 @@
       },
       "widgets_values": [
         "print = lambda x: f'{string_out}{x}'+'\\n'\nprint(\"hi\")\nexit()\nimport sys\n\n\ndef get_local_functions(module):\n    import inspect\n    ret = [[name, func] for name, func in inspect.getmembers(module, inspect.isfunction)]\n    return ret\n\n\n\n# Get the local functions in the current module\nlocal_functions = get_local_functions(sys.modules[__name__])\nprint(local_functions)\nprint(\"hi\")\n# Filter out the problematic 'create_module' function\n#local_functions.pop(\"create_module\", None)\n\n# Find their dependencies\n#function_dependencies = parse_function_dependencies(local_functions)\n\n# Group the functions based on their dependencies\n#grouped = group_dependencies(function_dependencies)\n\n# Print the resulting groups\n#print(grouped)\n"
+      ]
+    },
+    {
+      "id": 33,
+      "type": "TextConcat",
+      "pos": [
+        -1720,
+        140
+      ],
+      "size": [
+        560,
+        460
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            21
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextConcat"
+      },
+      "widgets_values": [
+        "class PromptTemplate:\n    \"\"\"replaces the text in the given text string with a given other text at some key positions\"\"\"\n\n    @classmethod\n    def INPUT_TYPES(s):\n        return {\"required\":\n            {\n                \"text\": (\"STRING\", {\"multiline\": True}),\n                \"replacement\": (\"STRING\", {\"multiline\": True}),\n                \"key1\": (\"STRING\", {\"multiline\": False}),\n            }\n        }\n\n    CATEGORY = \"text\"\n    RETURN_TYPES = (\"STRING\",)\n    FUNCTION = \"prompt_template_handler\"\n\n    def prompt_template_handler(self, text: str, replacement, key1):\n        \"\"\"\n        >>> PromptTemplate().prompt_template_handler(\"hello world\", \"universe\", \"world\")\n        'hello universe'\n        \"\"\"\n        return (text.replace(key1, replacement),)\n\n",
+        "class LatentCrop:\n    @classmethod\n    def INPUT_TYPES(s):\n        return {\"required\": { \"samples\": (\"LATENT\",),\n                              \"width\": (\"INT\", {\"default\": 512, \"min\": 64, \"max\": MAX_RESOLUTION, \"step\": 8}),\n                              \"height\": (\"INT\", {\"default\": 512, \"min\": 64, \"max\": MAX_RESOLUTION, \"step\": 8}),\n                              \"x\": (\"INT\", {\"default\": 0, \"min\": 0, \"max\": MAX_RESOLUTION, \"step\": 8}),\n                              \"y\": (\"INT\", {\"default\": 0, \"min\": 0, \"max\": MAX_RESOLUTION, \"step\": 8}),\n                              }}\n    RETURN_TYPES = (\"LATENT\",)\n    FUNCTION = \"crop\"\n\n    CATEGORY = \"latent/transform\"\n\n    def crop(self, samples, width, height, x, y):\n        s = samples.copy()\n        samples = samples['samples']\n        x =  x // 8\n        y = y // 8\n\n        #enfonce minimum size of 64\n        if x > (samples.shape[3] - 8):\n            x = samples.shape[3] - 8\n        if y > (samples.shape[2] - 8):\n            y = samples.shape[2] - 8\n\n        new_height = height // 8\n        new_width = width // 8\n        to_x = new_width + x\n        to_y = new_height + y\n        s['samples'] = samples[:,:,y:to_y, x:to_x]\n        return (s,)\n\n\n"
+      ]
+    },
+    {
+      "id": 34,
+      "type": "TextConcat",
+      "pos": [
+        -2160,
+        -800
+      ],
+      "size": [
+        760,
+        720
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextConcat"
+      },
+      "widgets_values": [
+        "",
+        "\nimport requests\n\nclass HttpPost:\n    @classmethod\n    def INPUT_TYPES(cls):\n        return {\n            \"url\": (\"STRING\",),\n            \"data\": (\"STRING\",),\n            \"headers\": (\"OBJECT\", \"default\": {}),\n        }\n\n    RETURN_TYPES = (\"OBJECT\",)\n    FUNCTION = \"http_post\"\n\n    CATEGORY = \"network\"\n\n    def http_post(self, url, data, headers={}):\n        \"\"\"\n        >>> HttpPost().http_post('http://httpbin.org/post', {'name': 'John', 'age': 30})\n        {\n            'url': 'http://httpbin.org/post',\n            'args': {},\n            'data': '',\n            'json': {'name': 'John', 'age': 30},\n            'files': {},\n            'form': {},\n            'headers': {\n                'Accept-Encoding': 'gzip, deflate',\n                'Content-Length': '23',\n                'Content-Type': 'application/json',\n                'Host': 'httpbin.org',\n                'User-Agent': 'python-requests/2.25.0',\n                'X-Amzn-Trace-Id': 'Root=1-6119f9b8-0826edaa60b0525b42db2a32'\n            },\n            'json': {'name': 'John', 'age': 30},\n            'method': 'POST',\n            'origin': 'YOUR_IP_ADDRESS',\n            'url': 'http://httpbin.org/post'\n        }\n        \"\"\"\n        response = requests.post(url, data, headers=headers)\n        return (response.json(),)\n"
       ]
     }
   ],
@@ -847,14 +849,6 @@
       "STRING"
     ],
     [
-      16,
-      28,
-      0,
-      29,
-      0,
-      "STRING"
-    ],
-    [
       17,
       29,
       0,
@@ -883,6 +877,14 @@
       4,
       0,
       31,
+      0,
+      "STRING"
+    ],
+    [
+      21,
+      33,
+      0,
+      29,
       0,
       "STRING"
     ]
