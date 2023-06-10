@@ -9,6 +9,7 @@ import execution
 import uuid
 import json
 import glob
+import struct
 from PIL import Image
 from io import BytesIO
 import main
@@ -29,13 +30,16 @@ import comfy.utils
 import comfy.model_management
 
 
+class BinaryEventTypes:
+    PREVIEW_IMAGE = 1
+
+
 @web.middleware
 async def cache_control(request: web.Request, handler):
     response: web.Response = await handler(request)
     if request.path.endswith('.js') or request.path.endswith('.css'):
         response.headers.setdefault('Cache-Control', 'no-cache')
     return response
-
 
 def create_cors_middleware(allowed_origin: str):
     @web.middleware
@@ -62,7 +66,7 @@ class PromptServer():
     def __init__(self, loop):
         PromptServer.instance = self
 
-        mimetypes.init();
+        mimetypes.init(); 
         mimetypes.types_map['.js'] = 'application/javascript; charset=utf-8'
         self.prompt_queue = None
         self.loop = loop
@@ -97,11 +101,11 @@ class PromptServer():
 
             try:
                 # Send initial state to the new client
-                await self.send("status", {"status": self.get_queue_info(), 'sid': sid}, sid)
+                await self.send("status", { "status": self.get_queue_info(), 'sid': sid }, sid)
                 # On reconnect if we are the currently executing client send the current node
                 if self.client_id == sid and self.last_node_id is not None:
-                    await self.send("executing", {"node": self.last_node_id}, sid)
-
+                    await self.send("executing", { "node": self.last_node_id }, sid)
+                    
                 async for msg in ws:
                     if msg.type == aiohttp.WSMsgType.ERROR:
                         print('ws connection closed with exception %s' % ws.exception())
@@ -121,8 +125,7 @@ class PromptServer():
         @routes.get("/extensions")
         async def get_extensions(request):
             files = glob.glob(os.path.join(self.web_root, 'extensions/**/*.js'), recursive=True)
-            return web.json_response(
-                list(map(lambda f: "/" + os.path.relpath(f, self.web_root).replace("\\", "/"), files)))
+            return web.json_response(list(map(lambda f: "/" + os.path.relpath(f, self.web_root).replace("\\", "/"), files)))
 
         def get_dir_by_type(dir_type):
             if dir_type is None:
@@ -138,11 +141,6 @@ class PromptServer():
             return type_dir, dir_type
 
         def image_upload(post, image_save_function=None):
-            """
-            Handles image uploads and saves them to the specified directory, optionally calling a function
-            to save the image in a different format.
-            Also handles overwriting existing files,creating subfolders, and creating the directory if it doesn't exist.
-            """
             image = post.get("image")
             overwrite = post.get("overwrite")
 
@@ -181,7 +179,7 @@ class PromptServer():
                     with open(filepath, "wb") as f:
                         f.write(image.file.read())
 
-                return web.json_response({"name": filename, "subfolder": subfolder, "type": image_upload_type})
+                return web.json_response({"name" : filename, "subfolder": subfolder, "type": image_upload_type})
             else:
                 return web.Response(status=400)
 
@@ -209,7 +207,7 @@ class PromptServer():
         async def view_image(request):
             if "filename" in request.rel_url.query:
                 filename = request.rel_url.query["filename"]
-                filename, output_dir = folder_paths.annotated_filepath(filename)
+                filename,output_dir = folder_paths.annotated_filepath(filename)
 
                 # validation for security: prevent accessing arbitrary path
                 if filename[0] == '/' or '..' in filename:
@@ -232,6 +230,27 @@ class PromptServer():
                 file = os.path.join(output_dir, filename)
 
                 if os.path.isfile(file):
+                    if 'preview' in request.rel_url.query:
+                        with Image.open(file) as img:
+                            preview_info = request.rel_url.query['preview'].split(';')
+
+                            image_format = preview_info[0]
+                            if image_format not in ['webp', 'jpeg']:
+                                image_format = 'webp'
+
+                            quality = 90
+                            if preview_info[-1].isdigit():
+                                quality = int(preview_info[-1])
+
+                            buffer = BytesIO()
+                            if image_format in ['jpeg']:
+                                img = img.convert("RGB")
+                            img.save(buffer, format=image_format, quality=quality)
+                            buffer.seek(0)
+
+                            return web.Response(body=buffer.read(), content_type=f'image/{image_format}',
+                                                headers={"Content-Disposition": f"filename=\"{filename}\""})
+
                     if 'channel' not in request.rel_url.query:
                         channel = 'rgba'
                     else:
@@ -288,7 +307,7 @@ class PromptServer():
             safetensors_path = folder_paths.get_full_path(folder_name, filename)
             if safetensors_path is None:
                 return web.Response(status=404)
-            out = comfy.utils.safetensors_header(safetensors_path, max_size=1024 * 1024)
+            out = comfy.utils.safetensors_header(safetensors_path, max_size=1024*1024)
             if out is None:
                 return web.Response(status=404)
             dt = json.loads(out)
@@ -326,13 +345,10 @@ class PromptServer():
             info = {}
             info['input'] = obj_class.INPUT_TYPES()
             info['output'] = obj_class.RETURN_TYPES
-            info['output_is_list'] = obj_class.OUTPUT_IS_LIST if hasattr(obj_class, 'OUTPUT_IS_LIST') else [
-                                                                                                               False] * len(
-                obj_class.RETURN_TYPES)
+            info['output_is_list'] = obj_class.OUTPUT_IS_LIST if hasattr(obj_class, 'OUTPUT_IS_LIST') else [False] * len(obj_class.RETURN_TYPES)
             info['output_name'] = obj_class.RETURN_NAMES if hasattr(obj_class, 'RETURN_NAMES') else info['output']
             info['name'] = node_class
-            info['display_name'] = nodes.NODE_DISPLAY_NAME_MAPPINGS[
-                node_class] if node_class in nodes.NODE_DISPLAY_NAME_MAPPINGS.keys() else node_class
+            info['display_name'] = nodes.NODE_DISPLAY_NAME_MAPPINGS[node_class] if node_class in nodes.NODE_DISPLAY_NAME_MAPPINGS.keys() else node_class
             info['description'] = ''
             info['category'] = 'sd'
             info['internal_state'] = obj_class.INTERNAL_STATE if hasattr(obj_class, 'INTERNAL_STATE') else ''
@@ -527,16 +543,37 @@ class PromptServer():
         return prompt_info
 
     async def send(self, event, data, sid=None):
-        message = {"type": event, "data": data}
+        if isinstance(data, (bytes, bytearray)):
+            await self.send_bytes(event, data, sid)
+        else:
+            await self.send_json(event, data, sid)
 
-        if isinstance(message, str) == False:
-            message = json.dumps(message)
+    def encode_bytes(self, event, data):
+        if not isinstance(event, int):
+            raise RuntimeError(f"Binary event types must be integers, got {event}")
+
+        packed = struct.pack(">I", event)
+        message = bytearray(packed)
+        message.extend(data)
+        return message
+
+    async def send_bytes(self, event, data, sid=None):
+        message = self.encode_bytes(event, data)
 
         if sid is None:
             for ws in self.sockets.values():
-                await ws.send_str(message)
+                await ws.send_bytes(message)
         elif sid in self.sockets:
-            await self.sockets[sid].send_str(message)
+            await self.sockets[sid].send_bytes(message)
+
+    async def send_json(self, event, data, sid=None):
+        message = {"type": event, "data": data}
+
+        if sid is None:
+            for ws in self.sockets.values():
+                await ws.send_json(message)
+        elif sid in self.sockets:
+            await self.sockets[sid].send_json(message)
 
     def send_sync(self, event, data, sid=None):
         self.loop.call_soon_threadsafe(
