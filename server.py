@@ -446,6 +446,10 @@ class PromptServer():
             json_data: dict = await request.json()
 
             infer_uuid = json_data.pop("infer_uuid", None)
+            if not infer_uuid:
+                Warning("invalid uuid given in request json, exiting inference")
+                return
+
             graph_name = json_data.pop("graph_name", None)
 
             # get the servers saved graph from the saved json file
@@ -459,6 +463,8 @@ class PromptServer():
 
             saved_request_json = saved_requests[graph_name]
 
+            # set the inputs to the given values from the request for inference
+            # also set all the uuids to the requests uuid
             for source_k, source_v in json_data.items():
                 for target_k, target_v in saved_request_json["prompt"].items():
                     if "class_type" in target_v:
@@ -471,24 +477,28 @@ class PromptServer():
                                     target_v["inputs"]["uuid"] = infer_uuid
 
 
-            # create an awaitable for the json
+            # create an awaitable for the json so we can call post_prompt (/prompt)
             await_able = asyncio.Future()
             await_able.set_result(saved_request_json)
             request.json = lambda: await_able
 
+            # go ahead and make the call
             result = await post_prompt(request)
-            pid = json.loads(result.body)["prompt_id"]
+
+            # so even though we called /prompt , nothing has been executed yet its just in the queue
+            # useful?
+            # pid = json.loads(result.body)["prompt_id"]
 
             # this is the callback that will be called when /prompt is done
-            async def wait_for_prompt_and_return_result(prompt_id):
-                while prompt_id not in shared.server_obj_holder[0]['executed']:
+            async def wait_for_prompt_and_return_result(uuid):
+                while uuid not in shared.server_obj_holder[0]['executed']:
                     await asyncio.sleep(0.01)
 
-                result = shared.server_obj_holder[0]['executed'][prompt_id]
+                result = shared.server_obj_holder[0]['executed'][uuid]
                 return result
 
             # schedule the task to wait for prompt result
-            task = asyncio.create_task(wait_for_prompt_and_return_result(pid))
+            task = asyncio.create_task(wait_for_prompt_and_return_result(infer_uuid))
 
             # wait for the result
             result = await task
