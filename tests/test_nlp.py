@@ -2,7 +2,7 @@ import unittest
 import os
 import openai
 
-from custom_nodes.SWAIN.nlp import get_openai_embedding
+from custom_nodes.SWAIN.text import get_openai_embedding
 
 
 class TestGetOpenAIEmbedding(unittest.TestCase):
