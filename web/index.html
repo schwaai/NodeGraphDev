@@ -15,6 +15,9 @@
 
     <script type="text/javascript" src="lib/litegraph.core.js"></script>
     <script type="module">
+        require(['vs/editor/editor.main'], function () {
+            // The Monaco Editor scripts have been loaded
+        });
         import {app} from "/scripts/app.js";
 
         (async () => {
@@ -24,9 +27,7 @@
         })();
 
         // Load the Monaco Editor scripts
-        require(['vs/editor/editor.main'], function() {
-            // The Monaco Editor scripts have been loaded
-        });
+
     </script>
 </head>
 <body class="litegraph"></body>
