@@ -107,3 +107,11 @@ yapf
 yarl
 zipp
 zstandard
+safetensors
+transformers
+psutil
+einops
+scipy
+torchdiffeq
+torchsde
+accelerate
