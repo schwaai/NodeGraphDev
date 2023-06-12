@@ -79,7 +79,6 @@ def load_extra_path_config(yaml_path):
 
 
 main_queue = None
-server_obj_holder = [{"server_strings": {}, "executed": {}}]
 if __name__ == "__main__":
     cleanup_temp()
 
@@ -100,7 +99,7 @@ if __name__ == "__main__":
     server.add_routes()
     hijack_progress(server)
 
-    threading.Thread(target=prompt_worker, daemon=True, args=(q,server,)).start()
+    threading.Thread(target=prompt_worker, daemon=True, args=(main_queue,server,)).start()
 
     if args.output_directory:
         output_dir = os.path.abspath(args.output_directory)

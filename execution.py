@@ -198,10 +198,10 @@ def recursive_execute(server, prompt, outputs, current_item, extra_data, execute
                     for k, v in l2["result"][0].items():
                         results_kv[k] = v
 
-    if not prompt_id in main.server_obj_holder[0]["executed"]:
-        main.server_obj_holder[0]["executed"][prompt_id] = {}
+    if not prompt_id in shared.server_obj_holder[0]["executed"]:
+        shared.server_obj_holder[0]["executed"][prompt_id] = {}
 
-    main.server_obj_holder[0]["executed"][prompt_id].update(results_kv)
+    shared.server_obj_holder[0]["executed"][prompt_id].update(results_kv)
 
     return (True, None, None)
 

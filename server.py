@@ -12,7 +12,7 @@ import glob
 import struct
 from PIL import Image
 from io import BytesIO
-import main
+import shared
 
 try:
     import aiohttp
@@ -426,7 +426,7 @@ class PromptServer():
                     outputs_to_execute = valid[2]
                     self.prompt_queue.put((number, prompt_id, prompt, extra_data, outputs_to_execute))
 
-                    main.server_obj_holder[0]['last_exec_json'] = json_data
+                    shared.server_obj_holder[0]['last_exec_json'] = json_data
 
                     return web.json_response({"prompt_id": prompt_id, "number": number})
                 else:
@@ -481,10 +481,10 @@ class PromptServer():
 
             # this is the callback that will be called when /prompt is done
             async def wait_for_prompt_and_return_result(prompt_id):
-                while prompt_id not in main.server_obj_holder[0]['executed']:
+                while prompt_id not in shared.server_obj_holder[0]['executed']:
                     await asyncio.sleep(0.01)
 
-                result = main.server_obj_holder[0]['executed'][prompt_id]
+                result = shared.server_obj_holder[0]['executed'][prompt_id]
                 return result
 
             # schedule the task to wait for prompt result
