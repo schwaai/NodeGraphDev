@@ -13,7 +13,7 @@ import torch
 import nodes
 
 import comfy.model_management
-
+import shared
 
 def get_input_data(inputs, class_def, unique_id, outputs={}, prompt={}, extra_data={}):
     valid_inputs = class_def.INPUT_TYPES()
@@ -46,6 +46,46 @@ def get_input_data(inputs, class_def, unique_id, outputs={}, prompt={}, extra_da
 
 
 def map_node_over_list(obj, input_data_all, func, allow_interrupt=False):
+    """
+    Maps a function over a list of input data dictionaries, executing the function for each item in the list.
+
+    Args:
+        obj (object): The object on which the function should be called.
+        input_data_all (dict): A dictionary containing input data for the function call. Each key represents an input
+                               parameter name, and the corresponding value is a list of values for that parameter.
+                               The length of each value list should be the same.
+        func (str): The name of the function to be called on the object.
+        allow_interrupt (bool, optional): Indicates whether interrupting execution between function calls is allowed.
+                                          Default is False.
+
+    Returns:
+        list: A list containing the results of executing the function for each item in the input data list.
+
+    Note:
+        - The function must be defined on the object `obj` and take named arguments corresponding to the keys in
+          `input_data_all` dictionary.
+        - The function may be called with a single set of input values or with multiple sets of input values if
+          `intput_is_list` is set to True on the object `obj`.
+        - When `intput_is_list` is False, the function will be called for each item in the longest input value list.
+          If the input lists are not of equal length, the last value of each list will be repeated for shorter lists.
+        - If `allow_interrupt` is set to True, the `before_node_execution` method will be called on the `nodes` object,
+          if available, before each function call.
+
+    Example:
+        >>> obj = SomeClass()
+        >>> input_data_all = {
+                'param1': [1, 2, 3],
+                'param2': ['a', 'b', 'c']
+            }
+        >>> results = map_node_over_list(obj, input_data_all, 'some_function')
+        Returns a list containing the results of calling the 'some_function' method on `obj` with the input values:
+        [
+            result_1,
+            result_2,
+            result_3
+        ]
+    """
+
     # check if node wants the lists
     intput_is_list = False
     if hasattr(obj, "INPUT_IS_LIST"):
