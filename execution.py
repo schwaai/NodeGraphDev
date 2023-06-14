@@ -8,12 +8,12 @@ import heapq
 import traceback
 import gc
 import time
-
+import shared
 import torch
 import nodes
 
 import comfy.model_management
-import shared
+
 
 def get_input_data(inputs, class_def, unique_id, outputs={}, prompt={}, extra_data={}):
     valid_inputs = class_def.INPUT_TYPES()
