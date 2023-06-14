@@ -1,5 +1,32 @@
+from aiohttp import web
+
 import folder_paths
 import json
+import uuid
+
+def is_valid_uuid(uuid_string):
+    try:
+        uuid_obj = uuid.UUID(uuid_string)
+        return str(uuid_obj) == uuid_string
+    except ValueError:
+        return False
+
+def safe_read_saved_graphs():
+    import fcntl
+    with open(folder_paths.saved_requests_json, 'r') as f:
+        try:
+            # Acquire an exclusive lock on the file
+            # print(f"getting file lock for {folder_paths.saved_requests_json}")
+            fcntl.flock(f, fcntl.LOCK_EX)
+            tmp = f.read()
+            saved_requests = json.loads(tmp)
+        except Exception as e:
+            # Handle the exception
+            return web.json_response({"error": "error loading saved requests json: " + str(e)}, status=400)
+        finally:
+            # Release the lock when finished
+            fcntl.flock(f, fcntl.LOCK_UN)
+    return saved_requests
 
 
 def update_json_dict(fname, data_dict=None, data_json_input=None):
@@ -29,7 +56,7 @@ def update_json_dict(fname, data_dict=None, data_json_input=None):
         json.dump(json_data, f, indent=2)
 
 
-def get_json_dict(fname)->dict:
+def get_json_dict(fname) -> dict:
     """ assumes data is dict kv pair"""
     # read the json file
 
