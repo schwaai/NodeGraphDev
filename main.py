@@ -99,7 +99,7 @@ if __name__ == "__main__":
     server.add_routes()
     hijack_progress(server)
 
-    for i in range(10):
+    for i in range(1):
         threading.Thread(name="pw"+str(i), target=prompt_worker, daemon=True, args=(main_queue, server,)).start()
 
 
