@@ -8,6 +8,8 @@ def is_valid_uuid(uuid_string):
     try:
         uuid_obj = uuid.UUID(uuid_string)
         return str(uuid_obj) == uuid_string
+    except TypeError:
+        return False
     except ValueError:
         return False
 
