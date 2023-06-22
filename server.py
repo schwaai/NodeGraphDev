@@ -465,7 +465,11 @@ class PromptServer():
             # get the servers saved graph from the saved json file
             # also create the file if it doesn't exist
             saved_requests = safe_read_saved_graphs()
-            saved_request_json = saved_requests[graph_name]
+            try:
+                saved_request_json = saved_requests[graph_name]
+            except KeyError:
+                # and an error back to the client
+                return web.json_response({"error": "graph_name not found"}, status=400)
 
             # set the inputs to the given values from the request for inference
             # also set all the uuids to the requests uuid
@@ -479,7 +483,7 @@ class PromptServer():
 
                         if target_v["class_type"] == "RequestInput":
                             if source_k == target_v["inputs"]["key"]:
-                                use_graph["prompt"][target_k]["inputs"]["hidden_override"] = source_v
+                                use_graph["prompt"][target_k]["inputs"]["overridden_value"] = source_v
                                 use_graph["prompt"][target_k]["inputs"]["uuid"] = infer_uuid
 
                         if target_v["class_type"] == "SetApiResultKV":
@@ -507,7 +511,9 @@ class PromptServer():
                 while uuid not in shared.server_obj_holder[0]['executed']:
                     await asyncio.sleep(0.01)
 
+                # get the result from the shared dict
                 result = shared.server_obj_holder[0]['executed'][uuid]
+                shared.server_obj_holder[0]['executed'].pop(uuid)
                 return result
 
             # schedule the task to wait for prompt result

@@ -128,3 +128,4 @@ onnxruntime~=1.15.0
 setuptools~=67.7.2
 openai
 steamship
+paramiko
