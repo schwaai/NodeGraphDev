@@ -129,3 +129,5 @@ setuptools~=67.7.2
 openai
 steamship
 paramiko
+diskcache
+scikit-learn
