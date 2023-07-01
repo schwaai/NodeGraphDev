@@ -128,7 +128,9 @@ onnxruntime~=1.15.0
 setuptools~=67.7.2
 openai
 steamship
-paramiko~=3.2.0
+paramiko
 diskcache
 scikit-learn
 twitter~=1.19.6
+pycocotools~=2.0.6
+pycocoevalcap~=1.2
