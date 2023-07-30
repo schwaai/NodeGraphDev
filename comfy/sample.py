@@ -34,14 +34,23 @@ def prepare_mask(noise_mask, shape, device):
     return noise_mask
 
 def broadcast_cond(cond, batch, device):
-    """broadcasts conditioning to the batch size"""
+    """
+    broadcasts conditioning to the batch size
+    expects a list of lists like [[tensor.shape=1,77,768,dict],...] where the tensor is the conditioning
+    broadcasts it to
+    [[tensor.shape={batch},77,768,dict],...]
+    but only if the tensor is smaller than the batch size
+    p = one of a [tensor, dict] pair
+    so we can assume that p is maybe a collection of conditionings to possibly do something with.
+    since the batch is in the tensor inside each p
+    """
     copy = []
     for p in cond:
-        t = p[0]
-        if t.shape[0] < batch:
-            t = torch.cat([t] * batch)
-        t = t.to(device)
-        copy += [[t] + p[1:]]
+        tnsr = p[0]
+        if tnsr.shape[0] < batch:
+            tnsr = torch.cat([tnsr] * batch)
+        tnsr = tnsr.to(device)
+        copy += [[tnsr] + p[1:]]
     return copy
 
 def get_models_from_cond(cond, model_type):

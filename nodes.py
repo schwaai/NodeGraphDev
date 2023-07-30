@@ -1019,12 +1019,23 @@ class SetLatentNoiseMask:
         return (s,)
 
 
-def common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent, denoise=1.0, disable_noise=False, start_step=None, last_step=None, force_full_denoise=False):
+def common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent, denoise=1.0,
+                    disable_noise=False, start_step=None, last_step=None, force_full_denoise=False,
+                    one_seed_per_batch=False):
+    from copy import deepcopy
     device = comfy.model_management.get_torch_device()
     latent_image = latent["samples"]
 
     if disable_noise:
         noise = torch.zeros(latent_image.size(), dtype=latent_image.dtype, layout=latent_image.layout, device="cpu")
+    elif one_seed_per_batch:
+        # generate the first noise and then repeat it for the rest of the batch
+        sz = latent_image.size()
+        sz = (1, sz[1], sz[2], sz[3])
+        noise = torch.randn(sz, dtype=latent_image.dtype, layout=latent_image.layout,
+                            generator=torch.manual_seed(seed), device="cpu")
+        noise_to_cat = deepcopy([noise] * latent_image.shape[0])
+        noise = torch.cat(noise_to_cat, dim=0)
     else:
         batch_inds = latent["batch_index"] if "batch_index" in latent else None
         noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
@@ -1040,6 +1051,7 @@ def common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, 
     previewer = latent_preview.get_previewer(device, model.model.latent_format)
 
     pbar = comfy.utils.ProgressBar(steps)
+
     def callback(step, x0, x, total_steps):
         preview_bytes = None
         if previewer:
@@ -1047,11 +1059,12 @@ def common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, 
         pbar.update_absolute(step + 1, total_steps, preview_bytes)
 
     samples = comfy.sample.sample(model, noise, steps, cfg, sampler_name, scheduler, positive, negative, latent_image,
-                                  denoise=denoise, disable_noise=disable_noise, start_step=start_step, last_step=last_step,
-                                  force_full_denoise=force_full_denoise, noise_mask=noise_mask, callback=callback, seed=seed)
+                                  denoise=denoise, disable_noise=disable_noise, start_step=start_step,
+                                  last_step=last_step,
+                                  force_full_denoise=force_full_denoise, noise_mask=noise_mask, callback=callback)
     out = latent.copy()
     out["samples"] = samples
-    return (out, )
+    return (out,)
 
 class KSampler:
     @classmethod
