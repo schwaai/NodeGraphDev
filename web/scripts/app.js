@@ -1,10 +1,11 @@
+import { ComfyLogging } from "./logging.js";
 import { ComfyWidgets } from "./widgets.js";
 import { ComfyUI, $el } from "./ui.js";
 import { api } from "./api.js";
 import { defaultGraph } from "./defaultGraph.js";
 import { getPngMetadata, importA1111, getLatentMetadata } from "./pnginfo.js";
 
-/** 
+/**
  * @typedef {import("types/comfy").ComfyExtension} ComfyExtension
  */
 
@@ -31,6 +32,7 @@ export class ComfyApp {
 
 	constructor() {
 		this.ui = new ComfyUI(this);
+		this.logging = new ComfyLogging(this);
 
 		/**
 		 * List of extensions that are registered with the app
@@ -368,7 +370,11 @@ export class ComfyApp {
 					shiftY = w.last_y;
 					if (w.computeSize) {
 						shiftY += w.computeSize()[1] + 4;
-					} else {
+					}
+					else if(w.computedHeight) {
+						shiftY += w.computedHeight;
+					}
+					else {
 						shiftY += LiteGraph.NODE_WIDGET_HEIGHT + 4;
 					}
 				} else {
@@ -400,7 +406,7 @@ export class ComfyApp {
 						this.images = output.images;
 						imagesChanged = true;
 						imgURLs = imgURLs.concat(output.images.map(params => {
-							return "/view?" + new URLSearchParams(params).toString() + app.getPreviewFormatParam();
+							return api.apiURL("/view?" + new URLSearchParams(params).toString() + app.getPreviewFormatParam());
 						}))
 					}
 				}
@@ -764,6 +770,19 @@ export class ComfyApp {
 					}
 					block_default = true;
 				}
+
+				if (e.keyCode == 66 && e.ctrlKey) {
+					if (this.selected_nodes) {
+						for (var i in this.selected_nodes) {
+							if (this.selected_nodes[i].mode === 4) { // never
+								this.selected_nodes[i].mode = 0; // always
+							} else {
+								this.selected_nodes[i].mode = 4; // never
+							}
+						}
+					}
+					block_default = true;
+				}
 			}
 
 			this.graph.change();
@@ -832,7 +851,7 @@ export class ComfyApp {
 		LGraphCanvas.prototype.drawNodeShape = function (node, ctx, size, fgcolor, bgcolor, selected, mouse_over) {
 			const res = origDrawNodeShape.apply(this, arguments);
 
-			const nodeErrors = self.lastPromptError?.node_errors[node.id];
+			const nodeErrors = self.lastNodeErrors?.[node.id];
 
 			let color = null;
 			let lineWidth = 1;
@@ -841,7 +860,7 @@ export class ComfyApp {
 			} else if (self.dragOverNode && node.id === self.dragOverNode.id) {
 				color = "dodgerblue";
 			}
-			else if (self.lastPromptError != null && nodeErrors?.errors) {
+			else if (nodeErrors?.errors) {
 				color = "red";
 				lineWidth = 2;
 			}
@@ -910,14 +929,21 @@ export class ComfyApp {
 		const origDrawNode = LGraphCanvas.prototype.drawNode;
 		LGraphCanvas.prototype.drawNode = function (node, ctx) {
 			var editor_alpha = this.editor_alpha;
+			var old_color = node.bgcolor;
 
 			if (node.mode === 2) { // never
 				this.editor_alpha = 0.4;
 			}
 
+			if (node.mode === 4) { // never
+				node.bgcolor = "#FF00FF";
+				this.editor_alpha = 0.2;
+			}
+
 			const res = origDrawNode.apply(this, arguments);
 
 			this.editor_alpha = editor_alpha;
+			node.bgcolor = old_color;
 
 			return res;
 		};
@@ -999,9 +1025,10 @@ export class ComfyApp {
 	 */
 	async #loadExtensions() {
 		const extensions = await api.getExtensions();
+		this.logging.addEntry("Comfy.App", "debug", { Extensions: extensions });
 		for (const ext of extensions) {
 			try {
-				await import(ext);
+				await import(api.apiURL(ext));
 			} catch (error) {
 				console.error("Error loading extension", ext, error);
 			}
@@ -1034,8 +1061,12 @@ export class ComfyApp {
 		this.graph.start();
 
 		function resizeCanvas() {
-			canvasEl.width = canvasEl.offsetWidth;
-			canvasEl.height = canvasEl.offsetHeight;
+			// Limit minimal scale to 1, see https://github.com/comfyanonymous/ComfyUI/pull/845
+			const scale = Math.max(window.devicePixelRatio, 1);
+			const { width, height } = canvasEl.getBoundingClientRect();
+			canvasEl.width = Math.round(width * scale);
+			canvasEl.height = Math.round(height * scale);
+			canvasEl.getContext("2d").scale(scale, scale);
 			canvas.draw(true, true);
 		}
 
@@ -1278,6 +1309,9 @@ export class ComfyApp {
 					(t) => `<li>${t}</li>`
 				).join("")}</ul>Nodes that have failed to load will show as red on the graph.`
 			);
+			this.logging.addEntry("Comfy.App", "warn", {
+				MissingNodes: nodes,
+			});
 		}
 	}
 
@@ -1300,7 +1334,7 @@ export class ComfyApp {
 				continue;
 			}
 
-			if (node.mode === 2) {
+			if (node.mode === 2 || node.mode === 4) {
 				// Don't serialize muted nodes
 				continue;
 			}
@@ -1323,12 +1357,36 @@ export class ComfyApp {
 				let parent = node.getInputNode(i);
 				if (parent) {
 					let link = node.getInputLink(i);
-					while (parent && parent.isVirtualNode) {
-						link = parent.getInputLink(link.origin_slot);
-						if (link) {
-							parent = parent.getInputNode(link.origin_slot);
-						} else {
-							parent = null;
+					while (parent.mode === 4 || parent.isVirtualNode) {
+						let found = false;
+						if (parent.isVirtualNode) {
+							link = parent.getInputLink(link.origin_slot);
+							if (link) {
+								parent = parent.getInputNode(link.target_slot);
+								if (parent) {
+									found = true;
+								}
+							}
+						} else if (link && parent.mode === 4) {
+							let all_inputs = [link.origin_slot];
+							if (parent.inputs) {
+								all_inputs = all_inputs.concat(Object.keys(parent.inputs))
+								for (let parent_input in all_inputs) {
+									parent_input = all_inputs[parent_input];
+									if (parent.inputs[parent_input].type === node.inputs[i].type) {
+										link = parent.getInputLink(parent_input);
+										if (link) {
+											parent = parent.getInputNode(parent_input);
+										}
+										found = true;
+										break;
+									}
+								}
+							}
+						}
+
+						if (!found) {
+							break;
 						}
 					}
 
@@ -1405,7 +1463,7 @@ export class ComfyApp {
 		}
 
 		this.#processingQueue = true;
-		this.lastPromptError = null;
+		this.lastNodeErrors = null;
 
 		try {
 			while (this.#queueItems.length) {
@@ -1415,12 +1473,16 @@ export class ComfyApp {
 					const p = await this.graphToPrompt();
 
 					try {
-						await api.queuePrompt(number, p);
+						const res = await api.queuePrompt(number, p);
+						this.lastNodeErrors = res.node_errors;
+						if (this.lastNodeErrors.length > 0) {
+							this.canvas.draw(true, true);
+						}
 					} catch (error) {
 						const formattedError = this.#formatPromptError(error)
 						this.ui.dialog.show(formattedError);
 						if (error.response) {
-							this.lastPromptError = error.response;
+							this.lastNodeErrors = error.response.node_errors;
 							this.canvas.draw(true, true);
 						}
 						break;
@@ -1526,7 +1588,7 @@ export class ComfyApp {
 	clean() {
 		this.nodeOutputs = {};
 		this.nodePreviewImages = {}
-		this.lastPromptError = null;
+		this.lastNodeErrors = null;
 		this.lastExecutionError = null;
 		this.runningNodeId = null;
 	}

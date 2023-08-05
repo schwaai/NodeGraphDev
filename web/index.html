@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>ComfyUI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" type="text/css" href="lib/litegraph.css"/>
-    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <link rel="stylesheet" type="text/css" href="./lib/litegraph.css"/>
+    <link rel="stylesheet" type="text/css" href="./style.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
     <script>
         // Configure RequireJS to load the Monaco Editor scripts
@@ -13,13 +13,13 @@
     </script>
 
 
-    <script type="text/javascript" src="lib/litegraph.core.js"></script>
-		<script type="text/javascript" src="lib/litegraph.extensions.js" defer></script>
+    <script type="text/javascript" src="./lib/litegraph.core.js"></script>
+		<script type="text/javascript" src="./lib/litegraph.extensions.js" defer></script>
     <script type="module">
         require(['vs/editor/editor.main'], function () {
             // The Monaco Editor scripts have been loaded
         });
-        import {app} from "/scripts/app.js";
+        import {app} from "./scripts/app.js";
 
         (async () => {
             await app.setup();

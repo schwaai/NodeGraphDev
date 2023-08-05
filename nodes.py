@@ -7,6 +7,7 @@ import hashlib
 import traceback
 import math
 import time
+import random
 
 from PIL import Image, ImageOps
 from PIL.PngImagePlugin import PngInfo
@@ -24,6 +25,8 @@ import comfy.utils
 import comfy.clip_vision
 
 import comfy.model_management
+from comfy.cli_args import args
+
 import importlib
 
 import folder_paths
@@ -122,7 +125,7 @@ class ConditioningConcat:
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "concat"
 
-    CATEGORY = "advanced/conditioning"
+    CATEGORY = "conditioning"
 
     def concat(self, conditioning_to, conditioning_from):
         out = []
@@ -214,6 +217,28 @@ class ConditioningZeroOut:
             if "pooled_output" in d:
                 d["pooled_output"] = torch.zeros_like(d["pooled_output"])
             n = [torch.zeros_like(t[0]), d]
+            c.append(n)
+        return (c, )
+
+class ConditioningSetTimestepRange:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"conditioning": ("CONDITIONING", ),
+                             "start": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.001}),
+                             "end": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.001})
+                             }}
+    RETURN_TYPES = ("CONDITIONING",)
+    FUNCTION = "set_range"
+
+    CATEGORY = "advanced/conditioning"
+
+    def set_range(self, conditioning, start, end):
+        c = []
+        for t in conditioning:
+            d = t[1].copy()
+            d['start_percent'] = 1.0 - start
+            d['end_percent'] = 1.0 - end
+            n = [t[0], d]
             c.append(n)
         return (c, )
 
@@ -361,12 +386,22 @@ class SaveLatent:
         if prompt is not None:
             prompt_info = json.dumps(prompt)
 
-        metadata = {"prompt": prompt_info}
-        if extra_pnginfo is not None:
-            for x in extra_pnginfo:
-                metadata[x] = json.dumps(extra_pnginfo[x])
+        metadata = None
+        if not args.disable_metadata:
+            metadata = {"prompt": prompt_info}
+            if extra_pnginfo is not None:
+                for x in extra_pnginfo:
+                    metadata[x] = json.dumps(extra_pnginfo[x])
 
         file = f"{filename}_{counter:05}_.latent"
+
+        results = list()
+        results.append({
+            "filename": file,
+            "subfolder": subfolder,
+            "type": "output"
+        })
+
         file = os.path.join(full_output_folder, file)
 
         output = {}
@@ -374,7 +409,7 @@ class SaveLatent:
         output["latent_format_version_0"] = torch.tensor([])
 
         comfy.utils.save_torch_file(output, file, metadata=metadata)
-        return {}
+        return { "ui": { "latents": results } }
 
 
 class LoadLatent:
@@ -545,7 +580,9 @@ class LoraLoader:
             if self.loaded_lora[0] == lora_path:
                 lora = self.loaded_lora[1]
             else:
-                del self.loaded_lora
+                temp = self.loaded_lora
+                self.loaded_lora = None
+                del temp
 
         if lora is None:
             lora = comfy.utils.load_torch_file(lora_path, safe_load=True)
@@ -630,8 +667,57 @@ class ControlNetApply:
             if 'control' in t[1]:
                 c_net.set_previous_controlnet(t[1]['control'])
             n[1]['control'] = c_net
+            n[1]['control_apply_to_uncond'] = True
             c.append(n)
         return (c,)
+
+
+class ControlNetApplyAdvanced:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"positive": ("CONDITIONING", ),
+                             "negative": ("CONDITIONING", ),
+                             "control_net": ("CONTROL_NET", ),
+                             "image": ("IMAGE", ),
+                             "strength": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 10.0, "step": 0.01}),
+                             "start_percent": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.001}),
+                             "end_percent": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.001})
+                             }}
+
+    RETURN_TYPES = ("CONDITIONING","CONDITIONING")
+    RETURN_NAMES = ("positive", "negative")
+    FUNCTION = "apply_controlnet"
+
+    CATEGORY = "conditioning"
+
+    def apply_controlnet(self, positive, negative, control_net, image, strength, start_percent, end_percent):
+        if strength == 0:
+            return (positive, negative)
+
+        control_hint = image.movedim(-1,1)
+        cnets = {}
+
+        out = []
+        for conditioning in [positive, negative]:
+            c = []
+            for t in conditioning:
+                d = t[1].copy()
+
+                prev_cnet = d.get('control', None)
+                if prev_cnet in cnets:
+                    c_net = cnets[prev_cnet]
+                else:
+                    c_net = control_net.copy().set_cond_hint(control_hint, strength, (1.0 - start_percent, 1.0 - end_percent))
+                    c_net.set_previous_controlnet(prev_cnet)
+                    cnets[prev_cnet] = c_net
+
+                d['control'] = c_net
+                d['control_apply_to_uncond'] = False
+                n = [t[0], d]
+                c.append(n)
+            out.append(c)
+        return (out[0], out[1])
+
 
 class UNETLoader:
     @classmethod
@@ -1060,6 +1146,46 @@ class LatentComposite:
         samples_out["samples"] = s
         return (samples_out,)
 
+class LatentBlend:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {
+            "samples1": ("LATENT",),
+            "samples2": ("LATENT",),
+            "blend_factor": ("FLOAT", {
+                "default": 0.5,
+                "min": 0,
+                "max": 1,
+                "step": 0.01
+            }),
+        }}
+
+    RETURN_TYPES = ("LATENT",)
+    FUNCTION = "blend"
+
+    CATEGORY = "_for_testing"
+
+    def blend(self, samples1, samples2, blend_factor:float, blend_mode: str="normal"):
+
+        samples_out = samples1.copy()
+        samples1 = samples1["samples"]
+        samples2 = samples2["samples"]
+
+        if samples1.shape != samples2.shape:
+            samples2.permute(0, 3, 1, 2)
+            samples2 = comfy.utils.common_upscale(samples2, samples1.shape[3], samples1.shape[2], 'bicubic', crop='center')
+            samples2.permute(0, 2, 3, 1)
+
+        samples_blended = self.blend_mode(samples1, samples2, blend_mode)
+        samples_blended = samples1 * blend_factor + samples_blended * (1 - blend_factor)
+        samples_out["samples"] = samples_blended
+        return (samples_out,)
+
+    def blend_mode(self, img1, img2, mode):
+        if mode == "normal":
+            return img2
+        else:
+            raise ValueError(f"Unsupported blend mode: {mode}")
 
 class LatentCrop:
     @classmethod
@@ -1229,6 +1355,7 @@ class SaveImage:
     def __init__(self):
         self.output_dir = folder_paths.get_output_directory()
         self.type = "output"
+        self.prefix_append = ""
 
     @classmethod
     def INPUT_TYPES(s):
@@ -1246,18 +1373,21 @@ class SaveImage:
     CATEGORY = "image"
 
     def save_images(self, images, filename_prefix="ComfyUI", prompt=None, extra_pnginfo=None):
+        filename_prefix += self.prefix_append
         full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(
             filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
         results = list()
         for image in images:
             i = 255. * image.cpu().numpy()
             img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
-            metadata = PngInfo()
-            if prompt is not None:
-                metadata.add_text("prompt", json.dumps(prompt))
-            if extra_pnginfo is not None:
-                for x in extra_pnginfo:
-                    metadata.add_text(x, json.dumps(extra_pnginfo[x]))
+            metadata = None
+            if not args.disable_metadata:
+                metadata = PngInfo()
+                if prompt is not None:
+                    metadata.add_text("prompt", json.dumps(prompt))
+                if extra_pnginfo is not None:
+                    for x in extra_pnginfo:
+                        metadata.add_text(x, json.dumps(extra_pnginfo[x]))
 
             file = f"{filename}_{counter:05}_.png"
             img.save(os.path.join(full_output_folder, file), pnginfo=metadata, compress_level=4)
@@ -1275,6 +1405,7 @@ class PreviewImage(SaveImage):
     def __init__(self):
         self.output_dir = folder_paths.get_temp_directory()
         self.type = "temp"
+        self.prefix_append = "_temp_" + ''.join(random.choice("abcdefghijklmnopqrstupvxyz") for x in range(5))
 
     @classmethod
     def INPUT_TYPES(s):
@@ -1526,11 +1657,13 @@ NODE_CLASS_MAPPINGS = {
     "ImagePadForOutpaint": ImagePadForOutpaint,
     "ConditioningAverage ": ConditioningAverage,
     "ConditioningCombine": ConditioningCombine,
+    "ConditioningConcat": ConditioningConcat,
     "ConditioningSetArea": ConditioningSetArea,
     "ConditioningSetMask": ConditioningSetMask,
     "KSamplerAdvanced": KSamplerAdvanced,
     "SetLatentNoiseMask": SetLatentNoiseMask,
     "LatentComposite": LatentComposite,
+    "LatentBlend": LatentBlend,
     "LatentRotate": LatentRotate,
     "LatentFlip": LatentFlip,
     "LatentCrop": LatentCrop,
@@ -1542,6 +1675,7 @@ NODE_CLASS_MAPPINGS = {
     "StyleModelApply": StyleModelApply,
     "unCLIPConditioning": unCLIPConditioning,
     "ControlNetApply": ControlNetApply,
+    "ControlNetApplyAdvanced": ControlNetApplyAdvanced,
     "ControlNetLoader": ControlNetLoader,
     "DiffControlNetLoader": DiffControlNetLoader,
     "StyleModelLoader": StyleModelLoader,
@@ -1559,7 +1693,7 @@ NODE_CLASS_MAPPINGS = {
     "SaveLatent": SaveLatent,
 
     "ConditioningZeroOut": ConditioningZeroOut,
-    "ConditioningConcat": ConditioningConcat,
+    "ConditioningSetTimestepRange": ConditioningSetTimestepRange,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -1584,9 +1718,11 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "CLIPSetLastLayer": "CLIP Set Last Layer",
     "ConditioningCombine": "Conditioning (Combine)",
     "ConditioningAverage ": "Conditioning (Average)",
+    "ConditioningConcat": "Conditioning (Concat)",
     "ConditioningSetArea": "Conditioning (Set Area)",
     "ConditioningSetMask": "Conditioning (Set Mask)",
     "ControlNetApply": "Apply ControlNet",
+    "ControlNetApplyAdvanced": "Apply ControlNet (Advanced)",
     # Latent
     "VAEEncodeForInpaint": "VAE Encode (for Inpainting)",
     "SetLatentNoiseMask": "Set Latent Noise Mask",
@@ -1599,6 +1735,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LatentUpscale": "Upscale Latent",
     "LatentUpscaleBy": "Upscale Latent By",
     "LatentComposite": "Latent Composite",
+    "LatentBlend": "Latent Blend",
     "LatentFromBatch": "Latent From Batch",
     "RepeatLatentBatch": "Repeat Latent Batch",
     # Image
@@ -1617,7 +1754,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
 }
 
 
-def load_custom_node(module_path):
+def load_custom_node(module_path, ignore=set()):
     module_name = os.path.basename(module_path)
     if os.path.isfile(module_path):
         sp = os.path.splitext(module_path)
@@ -1631,7 +1768,9 @@ def load_custom_node(module_path):
         sys.modules[module_name] = module
         module_spec.loader.exec_module(module)
         if hasattr(module, "NODE_CLASS_MAPPINGS") and getattr(module, "NODE_CLASS_MAPPINGS") is not None:
-            NODE_CLASS_MAPPINGS.update(module.NODE_CLASS_MAPPINGS)
+            for name in module.NODE_CLASS_MAPPINGS:
+                if name not in ignore:
+                    NODE_CLASS_MAPPINGS[name] = module.NODE_CLASS_MAPPINGS[name]
             if hasattr(module, "NODE_DISPLAY_NAME_MAPPINGS") and getattr(module,
                                                                          "NODE_DISPLAY_NAME_MAPPINGS") is not None:
                 NODE_DISPLAY_NAME_MAPPINGS.update(module.NODE_DISPLAY_NAME_MAPPINGS)
@@ -1646,6 +1785,7 @@ def load_custom_node(module_path):
 
 
 def load_custom_nodes():
+    base_node_names = set(NODE_CLASS_MAPPINGS.keys())
     node_paths = folder_paths.get_folder_paths("custom_nodes")
     node_import_times = []
 
@@ -1659,7 +1799,7 @@ def load_custom_nodes():
             if os.path.isfile(module_path) and os.path.splitext(module_path)[1] != ".py": continue
             if module_path.endswith(".disabled"): continue
             time_before = time.perf_counter()
-            success = load_custom_node(module_path)
+            success = load_custom_node(module_path, base_node_names)
             node_import_times.append((time.perf_counter() - time_before, module_path, success))
 
     if len(node_import_times) > 0:
@@ -1687,4 +1827,5 @@ def init_custom_nodes():
     load_custom_node(os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"), "nodes_model_merging.py"))
     load_custom_node(os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"), "nodes_tomesd.py"))
     load_custom_node(os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"), "nodes_clip_sdxl.py"))
+    load_custom_node(os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"), "nodes_canny.py"))
     load_custom_nodes()

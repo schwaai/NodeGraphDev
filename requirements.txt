@@ -112,6 +112,7 @@ psutil
 einops
 scipy
 torchdiffeq
+torch
 torchsde
 accelerate
 torch~=2.0.1+cu117
