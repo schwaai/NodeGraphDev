@@ -512,7 +512,6 @@ class PromptServer():
 
             # set the inputs to the given values from the request for inference
             # also set all the uuids to the requests uuid
-            # also somewhere in here is probably a class_type == SaveLastExec this entry needs removed
 
             use_graph = copy.deepcopy(saved_request_json)
             use_graph.pop("client_id", None)
@@ -522,6 +521,7 @@ class PromptServer():
 
                         if target_v["class_type"] == "RequestInput":
                             if source_k == target_v["inputs"]["key"]:
+                                # stuff the value into the graph
                                 use_graph["prompt"][target_k]["inputs"]["overridden_value"] = source_v
                                 use_graph["prompt"][target_k]["inputs"]["uuid"] = infer_uuid
 
@@ -531,9 +531,14 @@ class PromptServer():
                         if target_v["class_type"] == "SaveLastExec":
                             # remove this from the dict
                             use_graph["prompt"].pop(target_k, None)
-                            print(f"popped {target_k}")
+                            print(f"popped {target_k}: {target_v}")
 
-                    # create an awaitable for the json so we can call post_prompt (/prompt)
+                        if target_v["class_type"] == "ShowText":
+                            # remove this from the dict
+                            use_graph["prompt"].pop(target_k, None)
+                            print(f"popped {target_k}: {target_v}")
+
+            # create an awaitable for the json so we can call post_prompt (/prompt)
             await_able = asyncio.Future()
             await_able.set_result(use_graph)
             request.json = lambda: await_able

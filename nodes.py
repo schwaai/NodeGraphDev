@@ -57,7 +57,7 @@ class CLIPTextEncode:
     def encode(self, clip, text):
         tokens = clip.tokenize(text)
         cond, pooled = clip.encode_from_tokens(tokens, return_pooled=True)
-        return ([[cond, {"pooled_output": pooled}]], )
+        return ([[cond, {"pooled_output": pooled}]],)
 
 
 class ConditioningCombine:
@@ -107,13 +107,15 @@ class ConditioningAverage:
             tw = torch.mul(t1, conditioning_to_strength) + torch.mul(t0, (1.0 - conditioning_to_strength))
             t_to = conditioning_to[i][1].copy()
             if pooled_output_from is not None and pooled_output_to is not None:
-                t_to["pooled_output"] = torch.mul(pooled_output_to, conditioning_to_strength) + torch.mul(pooled_output_from, (1.0 - conditioning_to_strength))
+                t_to["pooled_output"] = torch.mul(pooled_output_to, conditioning_to_strength) + torch.mul(
+                    pooled_output_from, (1.0 - conditioning_to_strength))
             elif pooled_output_from is not None:
                 t_to["pooled_output"] = pooled_output_from
 
             n = [tw, t_to]
             out.append(n)
-        return (out, )
+        return (out,)
+
 
 class ConditioningConcat:
     @classmethod
@@ -121,7 +123,8 @@ class ConditioningConcat:
         return {"required": {
             "conditioning_to": ("CONDITIONING",),
             "conditioning_from": ("CONDITIONING",),
-            }}
+        }}
+
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "concat"
 
@@ -131,13 +134,14 @@ class ConditioningConcat:
         out = []
 
         if len(conditioning_from) > 1:
-            print("Warning: ConditioningConcat conditioning_from contains more than 1 cond, only the first one will actually be applied to conditioning_to.")
+            print(
+                "Warning: ConditioningConcat conditioning_from contains more than 1 cond, only the first one will actually be applied to conditioning_to.")
 
         cond_from = conditioning_from[0][0]
 
         for i in range(len(conditioning_to)):
             t1 = conditioning_to[i][0]
-            tw = torch.cat((t1, cond_from),1)
+            tw = torch.cat((t1, cond_from), 1)
             n = [tw, conditioning_to[i][1].copy()]
             out.append(n)
 
@@ -201,10 +205,12 @@ class ConditioningSetMask:
             c.append(n)
         return (c,)
 
+
 class ConditioningZeroOut:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": {"conditioning": ("CONDITIONING", )}}
+        return {"required": {"conditioning": ("CONDITIONING",)}}
+
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "zero_out"
 
@@ -218,7 +224,7 @@ class ConditioningZeroOut:
                 d["pooled_output"] = torch.zeros_like(d["pooled_output"])
             n = [torch.zeros_like(t[0]), d]
             c.append(n)
-        return (c, )
+        return (c,)
 
 class ConditioningSetTimestepRange:
     @classmethod
@@ -241,6 +247,7 @@ class ConditioningSetTimestepRange:
             n = [t[0], d]
             c.append(n)
         return (c, )
+
 
 class VAEDecode:
     @classmethod
@@ -591,6 +598,7 @@ class LoraLoader:
         model_lora, clip_lora = comfy.sd.load_lora_for_models(model, clip, lora, strength_model, strength_clip)
         return (model_lora, clip_lora)
 
+
 class VAELoader:
     @classmethod
     def INPUT_TYPES(s):
@@ -719,11 +727,13 @@ class ControlNetApplyAdvanced:
         return (out[0], out[1])
 
 
+
 class UNETLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "unet_name": (folder_paths.get_filename_list("unet"), ),
+        return {"required": {"unet_name": (folder_paths.get_filename_list("unet"),),
                              }}
+
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "load_unet"
 
@@ -733,6 +743,7 @@ class UNETLoader:
         unet_path = folder_paths.get_full_path("unet", unet_name)
         model = comfy.sd.load_unet(unet_path)
         return (model,)
+
 
 class CLIPLoader:
     @classmethod
@@ -747,14 +758,18 @@ class CLIPLoader:
 
     def load_clip(self, clip_name):
         clip_path = folder_paths.get_full_path("clip", clip_name)
-        clip = comfy.sd.load_clip(ckpt_paths=[clip_path], embedding_directory=folder_paths.get_folder_paths("embeddings"))
+        clip = comfy.sd.load_clip(ckpt_paths=[clip_path],
+                                  embedding_directory=folder_paths.get_folder_paths("embeddings"))
         return (clip,)
+
 
 class DualCLIPLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "clip_name1": (folder_paths.get_filename_list("clip"), ), "clip_name2": (folder_paths.get_filename_list("clip"), ),
+        return {"required": {"clip_name1": (folder_paths.get_filename_list("clip"),),
+                             "clip_name2": (folder_paths.get_filename_list("clip"),),
                              }}
+
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_clip"
 
@@ -763,7 +778,8 @@ class DualCLIPLoader:
     def load_clip(self, clip_name1, clip_name2):
         clip_path1 = folder_paths.get_full_path("clip", clip_name1)
         clip_path2 = folder_paths.get_full_path("clip", clip_name2)
-        clip = comfy.sd.load_clip(ckpt_paths=[clip_path1, clip_path2], embedding_directory=folder_paths.get_folder_paths("embeddings"))
+        clip = comfy.sd.load_clip(ckpt_paths=[clip_path1, clip_path2],
+                                  embedding_directory=folder_paths.get_folder_paths("embeddings"))
         return (clip,)
 
 
@@ -860,7 +876,8 @@ class unCLIPConditioning:
         c = []
         for t in conditioning:
             o = t[1].copy()
-            x = {"clip_vision_output": clip_vision_output, "strength": strength, "noise_augmentation": noise_augmentation}
+            x = {"clip_vision_output": clip_vision_output, "strength": strength,
+                 "noise_augmentation": noise_augmentation}
             if "unclip_conditioning" in o:
                 o["unclip_conditioning"] = o["unclip_conditioning"][:] + [x]
             else:
@@ -1280,7 +1297,7 @@ def common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, 
     samples = comfy.sample.sample(model, noise, steps, cfg, sampler_name, scheduler, positive, negative, latent_image,
                                   denoise=denoise, disable_noise=disable_noise, start_step=start_step,
                                   last_step=last_step,
-                                  force_full_denoise=force_full_denoise, noise_mask=noise_mask, callback=callback, seed=seed)
+                                  force_full_denoise=force_full_denoise, noise_mask=noise_mask, callback=callback)
     out = latent.copy()
     out["samples"] = samples
     return (out,)
@@ -1534,25 +1551,28 @@ class ImageScale:
         s = s.movedim(1, -1)
         return (s,)
 
+
 class ImageScaleBy:
     upscale_methods = ["nearest-exact", "bilinear", "area", "bicubic"]
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "image": ("IMAGE",), "upscale_method": (s.upscale_methods,),
-                              "scale_by": ("FLOAT", {"default": 1.0, "min": 0.01, "max": 8.0, "step": 0.01}),}}
+        return {"required": {"image": ("IMAGE",), "upscale_method": (s.upscale_methods,),
+                             "scale_by": ("FLOAT", {"default": 1.0, "min": 0.01, "max": 8.0, "step": 0.01}), }}
+
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "upscale"
 
     CATEGORY = "image/upscaling"
 
     def upscale(self, image, upscale_method, scale_by):
-        samples = image.movedim(-1,1)
+        samples = image.movedim(-1, 1)
         width = round(samples.shape[3] * scale_by)
         height = round(samples.shape[2] * scale_by)
         s = comfy.utils.common_upscale(samples, width, height, upscale_method, "disabled")
-        s = s.movedim(1,-1)
+        s = s.movedim(1, -1)
         return (s,)
+
 
 class ImageInvert:
 
@@ -1824,8 +1844,11 @@ def init_custom_nodes():
         os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"), "nodes_mask.py"))
     load_custom_node(
         os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"), "nodes_rebatch.py"))
-    load_custom_node(os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"), "nodes_model_merging.py"))
-    load_custom_node(os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"), "nodes_tomesd.py"))
-    load_custom_node(os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"), "nodes_clip_sdxl.py"))
+    load_custom_node(os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"),
+                                  "nodes_model_merging.py"))
+    load_custom_node(
+        os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"), "nodes_tomesd.py"))
+    load_custom_node(
+        os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"), "nodes_clip_sdxl.py"))
     load_custom_node(os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "comfy_extras"), "nodes_canny.py"))
     load_custom_nodes()

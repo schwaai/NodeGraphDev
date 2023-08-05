@@ -4,6 +4,7 @@ import folder_paths
 import json
 import uuid
 
+
 def is_valid_uuid(uuid_string):
     try:
         uuid_obj = uuid.UUID(uuid_string)
@@ -13,21 +14,33 @@ def is_valid_uuid(uuid_string):
     except ValueError:
         return False
 
+
 def safe_read_saved_graphs():
-    import fcntl
+    import os
+    import json
+    # make a random lock file name
+    lock_file = folder_paths.saved_requests_json + str(uuid.uuid4()) + ".lock"
+
+    # Try to create the lock file
+    while True:
+        try:
+            fd = os.open(lock_file, os.O_CREAT | os.O_EXCL)
+            with os.fdopen(fd, 'w'):
+                break
+        except FileExistsError:
+            pass
+
     with open(folder_paths.saved_requests_json, 'r') as f:
         try:
-            # Acquire an exclusive lock on the file
-            # print(f"getting file lock for {folder_paths.saved_requests_json}")
-            fcntl.flock(f, fcntl.LOCK_EX)
             tmp = f.read()
             saved_requests = json.loads(tmp)
         except Exception as e:
             # Handle the exception
             return web.json_response({"error": "error loading saved requests json: " + str(e)}, status=400)
-        finally:
-            # Release the lock when finished
-            fcntl.flock(f, fcntl.LOCK_UN)
+
+    # Remove the lock file
+    os.remove(lock_file)
+
     return saved_requests
 
 
