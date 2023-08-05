@@ -33,6 +33,8 @@ folder_names_and_paths["hypernetworks"] = ([os.path.join(models_dir, "hypernetwo
 output_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), "output")
 temp_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp")
 input_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), "input")
+server_state_json = os.path.join(os.path.dirname(os.path.realpath(__file__)), "server_state.json")
+saved_requests_json = os.path.join(os.path.dirname(os.path.realpath(__file__)), "saved_requests.json")
 
 filename_list_cache = {}
 

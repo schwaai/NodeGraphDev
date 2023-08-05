@@ -14,3 +14,10 @@ venv/
 web/extensions/*
 !web/extensions/logging.js.example
 !web/extensions/core/
+/custom_nodes.disabled/
+.idea
+.venv
+/log.txt
+/web/extensions/README.md
+/saved_requests.json
+/.idea

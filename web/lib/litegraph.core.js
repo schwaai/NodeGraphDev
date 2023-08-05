@@ -3628,18 +3628,6 @@
         return size;
     };
 
-    LGraphNode.prototype.inResizeCorner = function(canvasX, canvasY) {
-        var rows = this.outputs ? this.outputs.length : 1;
-        var outputs_offset = (this.constructor.slot_start_y || 0) + rows * LiteGraph.NODE_SLOT_HEIGHT;
-        return isInsideRectangle(canvasX,
-            canvasY,
-            this.pos[0] + this.size[0] - 15,
-            this.pos[1] + Math.max(this.size[1] - 15, outputs_offset),
-            20,
-            20
-        );
-    }
-
     /**
      * returns all the info available about a property of this node.
      *
@@ -5880,16 +5868,23 @@ LGraphNode.prototype.executeAction = function(action)
 
             //when clicked on top of a node
             //and it is not interactive
-            if (node && (this.allow_interaction || node.flags.allow_interaction) && !skip_action && !this.read_only) {
+            if (node && this.allow_interaction && !skip_action && !this.read_only) {
                 if (!this.live_mode && !node.flags.pinned) {
                     this.bringToFront(node);
                 } //if it wasn't selected?
 
                 //not dragging mouse to connect two slots
-                if ( this.allow_interaction && !this.connecting_node && !node.flags.collapsed && !this.live_mode ) {
+                if ( !this.connecting_node && !node.flags.collapsed && !this.live_mode ) {
                     //Search for corner for resize
                     if ( !skip_action &&
-                        node.resizable !== false && node.inResizeCorner(e.canvasX, e.canvasY)
+                        node.resizable !== false &&
+                        isInsideRectangle( e.canvasX,
+                            e.canvasY,
+                            node.pos[0] + node.size[0] - 5,
+                            node.pos[1] + node.size[1] - 5,
+                            10,
+                            10
+                        )
                     ) {
 						this.graph.beforeChange();
                         this.resizing_node = node;
@@ -6033,7 +6028,7 @@ LGraphNode.prototype.executeAction = function(action)
                     }
 
                     //double clicking
-                    if (this.allow_interaction && is_double_click && this.selected_nodes[node.id]) {
+                    if (is_double_click && this.selected_nodes[node.id]) {
                         //double click node
                         if (node.onDblClick) {
                             node.onDblClick( e, pos, this );
@@ -6068,7 +6063,7 @@ LGraphNode.prototype.executeAction = function(action)
 							this.graph.beforeChange();
                             this.node_dragged = node;
                         }
-                        this.processNodeSelected(node, e);
+                        if (!node.is_selected) this.processNodeSelected(node, e);
                     } else { // double-click
                         /**
                          * Don't call the function if the block is already selected.
@@ -6126,14 +6121,26 @@ LGraphNode.prototype.executeAction = function(action)
 
 					clicking_canvas_bg = true;
 				}
+              // HOGE
+              if (!e.altKey) {
+                this.dragging_rectangle = new Float32Array(4);
+                this.dragging_rectangle[0] = e.canvasX;
+                this.dragging_rectangle[1] = e.canvasY;
+                this.dragging_rectangle[2] = 1;
+                this.dragging_rectangle[3] = 1;
+                skip_action = true;
+              }
             }
 
             if (!skip_action && clicking_canvas_bg && this.allow_dragcanvas) {
             	//console.log("pointerevents: dragging_canvas start");
-            	this.dragging_canvas = true;
+            	// this.dragging_canvas = true; // HOGE
             }
             
         } else if (e.which == 2) {
+            this.dragging_canvas = true; // HOGE
+            LiteGraph.middle_click_slot_add_default_node = false; // HOGE
+
             //middle button
         	
 			if (LiteGraph.middle_click_slot_add_default_node){
@@ -6307,9 +6314,6 @@ LGraphNode.prototype.executeAction = function(action)
             this.dirty_canvas = true;
         }
 
-        //get node over
-        var node = this.graph.getNodeOnPos(e.canvasX,e.canvasY,this.visible_nodes);
-
         if (this.dragging_rectangle)
 		{
             this.dragging_rectangle[2] = e.canvasX - this.dragging_rectangle[0];
@@ -6339,10 +6343,13 @@ LGraphNode.prototype.executeAction = function(action)
             this.ds.offset[1] += delta[1] / this.ds.scale;
             this.dirty_canvas = true;
             this.dirty_bgcanvas = true;
-        } else if ((this.allow_interaction || (node && node.flags.allow_interaction)) && !this.read_only) {
+        } else if (this.allow_interaction && !this.read_only) {
             if (this.connecting_node) {
                 this.dirty_canvas = true;
             }
+
+            //get node over
+            var node = this.graph.getNodeOnPos(e.canvasX,e.canvasY,this.visible_nodes);
 
             //remove mouseover flag
             for (var i = 0, l = this.graph._nodes.length; i < l; ++i) {
@@ -6429,7 +6436,16 @@ LGraphNode.prototype.executeAction = function(action)
 
                 //Search for corner
                 if (this.canvas) {
-                    if (node.inResizeCorner(e.canvasX, e.canvasY)) {
+                    if (
+                        isInsideRectangle(
+                            e.canvasX,
+                            e.canvasY,
+                            node.pos[0] + node.size[0] - 5,
+                            node.pos[1] + node.size[1] - 5,
+                            5,
+                            5
+                        )
+                    ) {
                         this.canvas.style.cursor = "se-resize";
                     } else {
                         this.canvas.style.cursor = "crosshair";
@@ -6631,7 +6647,7 @@ LGraphNode.prototype.executeAction = function(action)
 							} //out of the visible area
 							to_select.push(nodeX);
 						}
-						if (to_select.length) {
+						if (true || to_select.length) { // HOGE
 							this.selectNodes(to_select,e.shiftKey); // add to selection with shift
 						}
 					}else{
@@ -9734,7 +9750,7 @@ LGraphNode.prototype.executeAction = function(action)
                     if (show_text) {
                         ctx.textAlign = "center";
                         ctx.fillStyle = text_color;
-                        ctx.fillText(w.label || w.name, widget_width * 0.5, y + H * 0.7);
+                        ctx.fillText(w.name, widget_width * 0.5, y + H * 0.7);
                     }
                     break;
                 case "toggle":
@@ -9755,9 +9771,8 @@ LGraphNode.prototype.executeAction = function(action)
                     ctx.fill();
                     if (show_text) {
                         ctx.fillStyle = secondary_text_color;
-                        const label = w.label || w.name;    
-                        if (label != null) {
-                            ctx.fillText(label, margin * 2, y + H * 0.7);
+                        if (w.name != null) {
+                            ctx.fillText(w.name, margin * 2, y + H * 0.7);
                         }
                         ctx.fillStyle = w.value ? text_color : secondary_text_color;
                         ctx.textAlign = "right";
@@ -9792,7 +9807,7 @@ LGraphNode.prototype.executeAction = function(action)
                         ctx.textAlign = "center";
                         ctx.fillStyle = text_color;
                         ctx.fillText(
-                            w.label || w.name + "  " + Number(w.value).toFixed(3),
+                            w.name + "  " + Number(w.value).toFixed(3),
                             widget_width * 0.5,
                             y + H * 0.7
                         );
@@ -9827,7 +9842,7 @@ LGraphNode.prototype.executeAction = function(action)
 							ctx.fill();
 						}
                         ctx.fillStyle = secondary_text_color;
-                        ctx.fillText(w.label || w.name, margin * 2 + 5, y + H * 0.7);
+                        ctx.fillText(w.name, margin * 2 + 5, y + H * 0.7);
                         ctx.fillStyle = text_color;
                         ctx.textAlign = "right";
                         if (w.type == "number") {
@@ -9879,9 +9894,8 @@ LGraphNode.prototype.executeAction = function(action)
 
 	                    //ctx.stroke();
                         ctx.fillStyle = secondary_text_color;
-                        const label = w.label || w.name;	
-                        if (label != null) {
-                            ctx.fillText(label, margin * 2, y + H * 0.7);
+                        if (w.name != null) {
+                            ctx.fillText(w.name, margin * 2, y + H * 0.7);
                         }
                         ctx.fillStyle = text_color;
                         ctx.textAlign = "right";
@@ -9913,7 +9927,7 @@ LGraphNode.prototype.executeAction = function(action)
         event,
         active_widget
     ) {
-        if (!node.widgets || !node.widgets.length || (!this.allow_interaction && !node.flags.allow_interaction)) {
+        if (!node.widgets || !node.widgets.length) {
             return null;
         }
 
@@ -9951,11 +9965,11 @@ LGraphNode.prototype.executeAction = function(action)
                     }
 					break;
 				case "slider":
-					var old_value = w.value;
+					var range = w.options.max - w.options.min;
 					var nvalue = Math.clamp((x - 15) / (widget_width - 30), 0, 1);
 					if(w.options.read_only) break;
 					w.value = w.options.min + (w.options.max - w.options.min) * nvalue;
-					if (old_value != w.value) {
+					if (w.callback) {
 						setTimeout(function() {
 							inner_value_change(w, w.value);
 						}, 20);
@@ -10042,7 +10056,7 @@ LGraphNode.prototype.executeAction = function(action)
 						if (event.click_time < 200 && delta == 0) {
 							this.prompt("Value",w.value,function(v) {
 									// check if v is a valid equation or a number
-									  if (/^[0-9+\-*/()\s]+|\d+\.\d+$/.test(v)) {
+									  if (/^[0-9+\-*/()\s]+$/.test(v)) {
 										try {//solve the equation if possible
 									    		v = eval(v);
 										} catch (e) { }
@@ -10301,119 +10315,6 @@ LGraphNode.prototype.executeAction = function(action)
         group.pos = canvas.convertEventToCanvasOffset(mouse_event);
         canvas.graph.add(group);
     };
-
-    /**
-     * Determines the furthest nodes in each direction
-     * @param nodes {LGraphNode[]} the nodes to from which boundary nodes will be extracted
-     * @return {{left: LGraphNode, top: LGraphNode, right: LGraphNode, bottom: LGraphNode}}
-     */
-    LGraphCanvas.getBoundaryNodes = function(nodes) {
-        let top = null;
-        let right = null;
-        let bottom = null;
-        let left = null;
-        for (const nID in nodes) {
-            const node = nodes[nID];
-            const [x, y] = node.pos;
-            const [width, height] = node.size;
-
-            if (top === null || y < top.pos[1]) {
-                top = node;
-            }
-            if (right === null || x + width > right.pos[0] + right.size[0]) {
-                right = node;
-            }
-            if (bottom === null || y + height > bottom.pos[1] + bottom.size[1]) {
-                bottom = node;
-            }
-            if (left === null || x < left.pos[0]) {
-                left = node;
-            }
-        }
-
-        return {
-            "top": top,
-            "right": right,
-            "bottom": bottom,
-            "left": left
-        };
-    }
-    /**
-     * Determines the furthest nodes in each direction for the currently selected nodes
-     * @return {{left: LGraphNode, top: LGraphNode, right: LGraphNode, bottom: LGraphNode}}
-     */
-    LGraphCanvas.prototype.boundaryNodesForSelection = function() {
-        return LGraphCanvas.getBoundaryNodes(Object.values(this.selected_nodes));
-    }
-
-    /**
-     *
-     * @param {LGraphNode[]} nodes a list of nodes
-     * @param {"top"|"bottom"|"left"|"right"} direction Direction to align the nodes
-     * @param {LGraphNode?} align_to Node to align to (if null, align to the furthest node in the given direction)
-     */
-    LGraphCanvas.alignNodes = function (nodes, direction, align_to) {
-        if (!nodes) {
-            return;
-        }
-
-        const canvas = LGraphCanvas.active_canvas;
-        let boundaryNodes = []
-        if (align_to === undefined) {
-            boundaryNodes = LGraphCanvas.getBoundaryNodes(nodes)
-        } else {
-            boundaryNodes = {
-                "top": align_to,
-                "right": align_to,
-                "bottom": align_to,
-                "left": align_to
-            }
-        }
-
-        for (const [_, node] of Object.entries(canvas.selected_nodes)) {
-            switch (direction) {
-                case "right":
-                    node.pos[0] = boundaryNodes["right"].pos[0] + boundaryNodes["right"].size[0] - node.size[0];
-                    break;
-                case "left":
-                    node.pos[0] = boundaryNodes["left"].pos[0];
-                    break;
-                case "top":
-                    node.pos[1] = boundaryNodes["top"].pos[1];
-                    break;
-                case "bottom":
-                    node.pos[1] = boundaryNodes["bottom"].pos[1] + boundaryNodes["bottom"].size[1] - node.size[1];
-                    break;
-            }
-        }
-
-        canvas.dirty_canvas = true;
-        canvas.dirty_bgcanvas = true;
-    };
-
-    LGraphCanvas.onNodeAlign = function(value, options, event, prev_menu, node) {
-        new LiteGraph.ContextMenu(["Top", "Bottom", "Left", "Right"], {
-            event: event,
-            callback: inner_clicked,
-            parentMenu: prev_menu,
-        });
-
-        function inner_clicked(value) {
-            LGraphCanvas.alignNodes(LGraphCanvas.active_canvas.selected_nodes, value.toLowerCase(), node);
-        }
-    }
-
-    LGraphCanvas.onGroupAlign = function(value, options, event, prev_menu) {
-        new LiteGraph.ContextMenu(["Top", "Bottom", "Left", "Right"], {
-            event: event,
-            callback: inner_clicked,
-            parentMenu: prev_menu,
-        });
-
-        function inner_clicked(value) {
-            LGraphCanvas.alignNodes(LGraphCanvas.active_canvas.selected_nodes, value.toLowerCase());
-        }
-    }
 
     LGraphCanvas.onMenuAdd = function (node, options, e, prev_menu, callback) {
 
@@ -13015,14 +12916,6 @@ LGraphNode.prototype.executeAction = function(action)
                 options.push({ content: "Options", callback: that.showShowGraphOptionsPanel });
             }*/
 
-            if (Object.keys(this.selected_nodes).length > 1) {
-                options.push({
-                    content: "Align",
-                    has_submenu: true,
-                    callback: LGraphCanvas.onGroupAlign,
-                })
-            }
-
             if (this._graph_stack && this._graph_stack.length > 0) {
                 options.push(null, {
                     content: "Close subgraph",
@@ -13140,14 +13033,6 @@ LGraphNode.prototype.executeAction = function(action)
 			content: "To Subgraph",
 			callback: LGraphCanvas.onMenuNodeToSubgraph
 		});
-
-        if (Object.keys(this.selected_nodes).length > 1) {
-            options.push({
-                content: "Align Selected To",
-                has_submenu: true,
-                callback: LGraphCanvas.onNodeAlign,
-            })
-        }
 
 		options.push(null, {
 			content: "Remove",

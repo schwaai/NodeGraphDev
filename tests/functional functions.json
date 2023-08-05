@@ -1,0 +1,896 @@
+{
+  "last_node_id": 34,
+  "last_link_id": 21,
+  "nodes": [
+    {
+      "id": 20,
+      "type": "ShowText",
+      "pos": [
+        1425.1155117797853,
+        926.9511999511719
+      ],
+      "size": {
+        "0": 210,
+        "1": 80
+      },
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING_OUT",
+          "type": "STRING",
+          "links": null,
+          "shape": 6
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 22,
+      "type": "ShowText",
+      "pos": [
+        149,
+        1837
+      ],
+      "size": {
+        "0": 250,
+        "1": 440
+      },
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING_OUT",
+          "type": "STRING",
+          "links": null,
+          "shape": 6
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      },
+      "widgets_values": [
+        "common_ksampler\nget_fonts\nget_image_size\nrgba_per_channel_norm\ntorch_image_show\nCLIPTextEncode\nCLIPTextEncodeAdvanced\nCheckpointLoaderSimple\nEmptyLatentImage\nExecWidget\nImageBC\nImageDistanceMask\nKSampler\nLoadImage\nPadToMatch\nPreviewImageTest\nPromptTemplate\nQuantize\nRGBA_MOD\nSaveImage\nSelectFromRGBSimilarity\nStackImages\nTextRender\nTinyTxtToImg\nVAEDecode\nVAEEncode\nrgba_lower_clip\nrgba_merge\nrgba_split\nrgba_upper_clip\nselect_from_batch"
+      ]
+    },
+    {
+      "id": 24,
+      "type": "ShowText",
+      "pos": [
+        1412,
+        1089
+      ],
+      "size": {
+        "0": 210,
+        "1": 75.99996948242188
+      },
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING_OUT",
+          "type": "STRING",
+          "links": null,
+          "shape": 6
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      }
+    },
+    {
+      "id": 16,
+      "type": "Eval Widget",
+      "pos": [
+        -574,
+        1831
+      ],
+      "size": {
+        "0": 681.8203125,
+        "1": 686.375732421875
+      },
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image1_in",
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            14
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "TUPLE",
+          "type": "TUPLE",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "CODE",
+          "type": "CODE",
+          "links": null,
+          "shape": 3,
+          "slot_index": 5
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Eval Widget"
+      },
+      "widgets_values": [
+        "exec_func",
+        "#print = lambda x: f'{string_out}{x}'+'\\n'\n#print(\"hi\")\n#exit()\nimport sys\ndef get_local_functions(module):\n    import inspect\n    ret = [[name, func] for name, func in inspect.getmembers(module, inspect.isfunction)]\n    ret2 = [[name, func] for name, func in inspect.getmembers(module, inspect.isclass)]\n    return ret+ret2\n\n\n\n# Get the local functions in the current module\nlocal_functions = get_local_functions(sys.modules[__name__])\nstring_out='\\n'.join([str(k) for k,v in local_functions])\n# Filter out the problematic 'create_module' function\n#local_functions.pop(\"create_module\", None)\n\n# Find their dependencies\n#function_dependencies = parse_function_dependencies(local_functions)\n\n# Group the functions based on their dependencies\n#grouped = group_dependencies(function_dependencies) \n \n# Print the resulting groups\n#print(grouped) \n    ",
+        "0",
+        "",
+        0
+      ]
+    },
+    {
+      "id": 3,
+      "type": "LLMConvo",
+      "pos": [
+        -2147,
+        -8
+      ],
+      "size": {
+        "0": 387.5476989746094,
+        "1": 687.072998046875
+      },
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "History",
+          "type": "STRING",
+          "links": [
+            2
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "Result",
+          "type": "STRING",
+          "links": null,
+          "shape": 3,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LLMConvo"
+      },
+      "widgets_values": [
+        "",
+        "you are an expert coding assistant that only responds with python code inside of code blocks\n\nyou never respond with anything besides code blocks of python",
+        "system"
+      ]
+    },
+    {
+      "id": 30,
+      "type": "TextConcat",
+      "pos": [
+        -1112,
+        204
+      ],
+      "size": {
+        "0": 541.6589965820312,
+        "1": 76
+      },
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 17,
+          "widget": {
+            "name": "text",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            18
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextConcat"
+      },
+      "widgets_values": [
+        "",
+        "\ncan you please make a node for me that will make a http post request?\n\n"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "LLMConvo",
+      "pos": [
+        -551,
+        -1
+      ],
+      "size": {
+        "0": 368.8406066894531,
+        "1": 686.1133422851562
+      },
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "history",
+          "type": "STRING",
+          "link": 2,
+          "widget": {
+            "name": "history",
+            "config": [
+              "STRING",
+              {
+                "multiline": true,
+                "default": ""
+              }
+            ]
+          }
+        },
+        {
+          "name": "text2",
+          "type": "STRING",
+          "link": 18,
+          "widget": {
+            "name": "text2",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "History",
+          "type": "STRING",
+          "links": [
+            20
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "Result",
+          "type": "STRING",
+          "links": [
+            19
+          ],
+          "shape": 3,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LLMConvo"
+      },
+      "widgets_values": [
+        "",
+        "I need code that assigns the location of the current python file to string_out",
+        "user"
+      ]
+    },
+    {
+      "id": 31,
+      "type": "ShowText",
+      "pos": [
+        -1083,
+        393
+      ],
+      "size": {
+        "0": 487.5791015625,
+        "1": 950.6953125
+      },
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 20
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING_OUT",
+          "type": "STRING",
+          "links": null,
+          "shape": 6
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      }
+    },
+    {
+      "id": 29,
+      "type": "TextConcat",
+      "pos": [
+        -1121,
+        55
+      ],
+      "size": {
+        "0": 541.6589965820312,
+        "1": 76
+      },
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 21,
+          "widget": {
+            "name": "text",
+            "config": [
+              "STRING",
+              {
+                "multiline": true
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            17
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextConcat"
+      },
+      "widgets_values": [
+        "",
+        "\nThose are examples of a node definition in Python for the litegraph.js framework.\n\n"
+      ]
+    },
+    {
+      "id": 18,
+      "type": "Eval Widget",
+      "pos": [
+        -125,
+        1143
+      ],
+      "size": {
+        "0": 714.77783203125,
+        "1": 665.4443969726562
+      },
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image1_in",
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            11
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "TUPLE",
+          "type": "TUPLE",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "CODE",
+          "type": "CODE",
+          "links": null,
+          "shape": 3,
+          "slot_index": 5
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Eval Widget"
+      },
+      "widgets_values": [
+        "exec_func",
+        "def parse_function_dependencies(functions):\n    dependencies = defaultdict(set)\n    for func_name, func in functions.items():\n        source = inspect.getsource(func)\n        tree = ast.parse(source)\n\n        # Track the depth of the current function definition\n        function_depth = 0\n        \n        for node in ast.walk(tree):\n            if isinstance(node, ast.FunctionDef):\n                if function_depth > 1:\n                    raise ValueError(f\"Nested function {node.name} is not supported\")\n                function_depth += 1\n            elif isinstance(node, ast.Name) and node.id in functions:\n                dependencies[func_name].add(node.id)\n\n        # Reset the function depth at the end of each function definition\n        function_depth = 0\n    return [(x, y) for x in dependencies for y in dependencies[x]]\n  ",
+        "0",
+        "",
+        0
+      ]
+    },
+    {
+      "id": 1,
+      "type": "Eval Widget",
+      "pos": [
+        -129,
+        -6
+      ],
+      "size": {
+        "0": 676.1627197265625,
+        "1": 1088.4952392578125
+      },
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image1_in",
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "code_str_in",
+          "type": "STRING",
+          "link": 19,
+          "widget": {
+            "name": "code_str_in",
+            "config": [
+              "STRING",
+              {
+                "multiline": true,
+                "default": ""
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            1
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "TUPLE",
+          "type": "TUPLE",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "CODE",
+          "type": "CODE",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Eval Widget"
+      },
+      "widgets_values": [
+        "\nimport os\n\nfile_path = os.path.abspath(__file__)\nstring_out = file_path\nprint(string_out)\n",
+        "import os\n\npy_file = os.path.abspath(__file__)\n\nint_out=int_out\nfloat_out=float_out\nstring_out=string_out\nimage_out=image_out\n",
+        "0",
+        "",
+        0
+      ]
+    },
+    {
+      "id": 2,
+      "type": "ShowText",
+      "pos": [
+        611,
+        3
+      ],
+      "size": {
+        "0": 267.1894836425781,
+        "1": 499.66497802734375
+      },
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING_OUT",
+          "type": "STRING",
+          "links": null,
+          "shape": 6
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText"
+      }
+    },
+    {
+      "id": 7,
+      "type": "Text box",
+      "pos": [
+        -1527,
+        1176
+      ],
+      "size": {
+        "0": 505.84002685546875,
+        "1": 379.77032470703125
+      },
+      "flags": {
+        "collapsed": true
+      },
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "title": "parse function dependencies",
+      "properties": {
+        "Node name for S&R": "Text box"
+      },
+      "widgets_values": [
+        "def parse_function_dependencies(functions):\n    dependencies = defaultdict(set)\n    for func_name, func in functions.items():\n        source = inspect.getsource(func)\n        tree = ast.parse(source)\n\n        # Track the depth of the current function definition\n        function_depth = 0\n\n        for node in ast.walk(tree):\n            if isinstance(node, ast.FunctionDef):\n                if function_depth > 1:\n                    raise ValueError(f\"Nested function {node.name} is not supported\")\n                function_depth += 1\n            elif isinstance(node, ast.Name) and node.id in functions:\n                dependencies[func_name].add(node.id)\n\n        # Reset the function depth at the end of each function definition\n        function_depth = 0\n    return [(x, y) for x in dependencies for y in dependencies[x]]\n"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "Text box",
+      "pos": [
+        -1510,
+        1131
+      ],
+      "size": {
+        "0": 496.11285400390625,
+        "1": 233.112060546875
+      },
+      "flags": {
+        "collapsed": true
+      },
+      "order": 5,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "title": "group dependancies",
+      "properties": {
+        "Node name for S&R": "Text box"
+      },
+      "widgets_values": [
+        "\n\ndef group_dependencies(dependencies):\n    graph = nx.Graph()\n    graph.add_edges_from(dependencies)\n\n    grouped = defaultdict(list)\n    for group_number, group in enumerate(nx.connected_components(graph), start=1):\n        for node in group:\n            grouped[group_number].append(node)\n\n    return grouped\n\n"
+      ]
+    },
+    {
+      "id": 8,
+      "type": "Text box",
+      "pos": [
+        -1490,
+        1090
+      ],
+      "size": {
+        "0": 532.26806640625,
+        "1": 377.3520812988281
+      },
+      "flags": {
+        "collapsed": true
+      },
+      "order": 6,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "title": "parse function",
+      "properties": {
+        "Node name for S&R": "Text box"
+      },
+      "widgets_values": [
+        "import ast\nimport inspect\nimport networkx as nx\nfrom collections import defaultdict\n\n\n\ndef parse_function_dependencies(functions):\n    dependencies = defaultdict(set)\n\n    for func_name, func in functions.items():\n        source = inspect.getsource(func)\n        tree = ast.parse(source)\n\n        for node in ast.walk(tree):\n            if isinstance(node, ast.FunctionDef):\n                if node.name in functions and node.name != \"create_module\":\n                    raise ValueError(f\"Nested function {node.name} is not supported\")\n            elif isinstance(node, ast.Name) and node.id in functions:\n                dependencies[func_name].add(node.id)\n\n    return [(x, y) for x in dependencies for y in dependencies[x]]\n\n\n"
+      ]
+    },
+    {
+      "id": 9,
+      "type": "Text box",
+      "pos": [
+        -1475,
+        1050
+      ],
+      "size": {
+        "0": 511.3052978515625,
+        "1": 253.88119506835938
+      },
+      "flags": {
+        "collapsed": true
+      },
+      "order": 7,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "title": "modules",
+      "properties": {
+        "Node name for S&R": "Text box"
+      },
+      "widgets_values": [
+        "print = lambda x: f'{string_out}{x}'+'\\n'\nprint(\"hi\")\nexit()\nimport sys\n\n\ndef get_local_functions(module):\n    import inspect\n    ret = [[name, func] for name, func in inspect.getmembers(module, inspect.isfunction)]\n    return ret\n\n\n\n# Get the local functions in the current module\nlocal_functions = get_local_functions(sys.modules[__name__])\nprint(local_functions)\nprint(\"hi\")\n# Filter out the problematic 'create_module' function\n#local_functions.pop(\"create_module\", None)\n\n# Find their dependencies\n#function_dependencies = parse_function_dependencies(local_functions)\n\n# Group the functions based on their dependencies\n#grouped = group_dependencies(function_dependencies)\n\n# Print the resulting groups\n#print(grouped)\n"
+      ]
+    },
+    {
+      "id": 33,
+      "type": "TextConcat",
+      "pos": [
+        -1720,
+        140
+      ],
+      "size": [
+        560,
+        460
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            21
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextConcat"
+      },
+      "widgets_values": [
+        "class PromptTemplate:\n    \"\"\"replaces the text in the given text string with a given other text at some key positions\"\"\"\n\n    @classmethod\n    def INPUT_TYPES(s):\n        return {\"required\":\n            {\n                \"text\": (\"STRING\", {\"multiline\": True}),\n                \"replacement\": (\"STRING\", {\"multiline\": True}),\n                \"key1\": (\"STRING\", {\"multiline\": False}),\n            }\n        }\n\n    CATEGORY = \"text\"\n    RETURN_TYPES = (\"STRING\",)\n    FUNCTION = \"prompt_template_handler\"\n\n    def prompt_template_handler(self, text: str, replacement, key1):\n        \"\"\"\n        >>> PromptTemplate().prompt_template_handler(\"hello world\", \"universe\", \"world\")\n        'hello universe'\n        \"\"\"\n        return (text.replace(key1, replacement),)\n\n",
+        "class LatentCrop:\n    @classmethod\n    def INPUT_TYPES(s):\n        return {\"required\": { \"samples\": (\"LATENT\",),\n                              \"width\": (\"INT\", {\"default\": 512, \"min\": 64, \"max\": MAX_RESOLUTION, \"step\": 8}),\n                              \"height\": (\"INT\", {\"default\": 512, \"min\": 64, \"max\": MAX_RESOLUTION, \"step\": 8}),\n                              \"x\": (\"INT\", {\"default\": 0, \"min\": 0, \"max\": MAX_RESOLUTION, \"step\": 8}),\n                              \"y\": (\"INT\", {\"default\": 0, \"min\": 0, \"max\": MAX_RESOLUTION, \"step\": 8}),\n                              }}\n    RETURN_TYPES = (\"LATENT\",)\n    FUNCTION = \"crop\"\n\n    CATEGORY = \"latent/transform\"\n\n    def crop(self, samples, width, height, x, y):\n        s = samples.copy()\n        samples = samples['samples']\n        x =  x // 8\n        y = y // 8\n\n        #enfonce minimum size of 64\n        if x > (samples.shape[3] - 8):\n            x = samples.shape[3] - 8\n        if y > (samples.shape[2] - 8):\n            y = samples.shape[2] - 8\n\n        new_height = height // 8\n        new_width = width // 8\n        to_x = new_width + x\n        to_y = new_height + y\n        s['samples'] = samples[:,:,y:to_y, x:to_x]\n        return (s,)\n\n\n"
+      ]
+    },
+    {
+      "id": 34,
+      "type": "TextConcat",
+      "pos": [
+        -2160,
+        -800
+      ],
+      "size": [
+        760,
+        720
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextConcat"
+      },
+      "widgets_values": [
+        "",
+        "\nimport requests\n\nclass HttpPost:\n    @classmethod\n    def INPUT_TYPES(cls):\n        return {\n            \"url\": (\"STRING\",),\n            \"data\": (\"STRING\",),\n            \"headers\": (\"OBJECT\", \"default\": {}),\n        }\n\n    RETURN_TYPES = (\"OBJECT\",)\n    FUNCTION = \"http_post\"\n\n    CATEGORY = \"network\"\n\n    def http_post(self, url, data, headers={}):\n        \"\"\"\n        >>> HttpPost().http_post('http://httpbin.org/post', {'name': 'John', 'age': 30})\n        {\n            'url': 'http://httpbin.org/post',\n            'args': {},\n            'data': '',\n            'json': {'name': 'John', 'age': 30},\n            'files': {},\n            'form': {},\n            'headers': {\n                'Accept-Encoding': 'gzip, deflate',\n                'Content-Length': '23',\n                'Content-Type': 'application/json',\n                'Host': 'httpbin.org',\n                'User-Agent': 'python-requests/2.25.0',\n                'X-Amzn-Trace-Id': 'Root=1-6119f9b8-0826edaa60b0525b42db2a32'\n            },\n            'json': {'name': 'John', 'age': 30},\n            'method': 'POST',\n            'origin': 'YOUR_IP_ADDRESS',\n            'url': 'http://httpbin.org/post'\n        }\n        \"\"\"\n        response = requests.post(url, data, headers=headers)\n        return (response.json(),)\n"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "STRING"
+    ],
+    [
+      2,
+      3,
+      0,
+      4,
+      0,
+      "STRING"
+    ],
+    [
+      11,
+      18,
+      0,
+      20,
+      0,
+      "STRING"
+    ],
+    [
+      14,
+      16,
+      0,
+      22,
+      0,
+      "STRING"
+    ],
+    [
+      17,
+      29,
+      0,
+      30,
+      0,
+      "STRING"
+    ],
+    [
+      18,
+      30,
+      0,
+      4,
+      1,
+      "STRING"
+    ],
+    [
+      19,
+      4,
+      1,
+      1,
+      1,
+      "STRING"
+    ],
+    [
+      20,
+      4,
+      0,
+      31,
+      0,
+      "STRING"
+    ],
+    [
+      21,
+      33,
+      0,
+      29,
+      0,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}
