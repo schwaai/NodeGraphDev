@@ -1,57 +1,112 @@
 import {app} from "/scripts/app.js";
+import {ComfyWidgets} from "/scripts/widgets.js";
 
-function addTextBox(node) {
-    // create the textbox widget
-    const widget = {
-        type: "text",
-        name: "MyTextBox",
-        value: "Default Text",
-        size: 20,  // text size
-    };
+class WidgetDefinitionExtension {
+    constructor() {
+        this.name = "WidgetDefinitionExtension";
+    }
 
-    // add the widget to the node
-    node.addWidget(widget.type, widget.name, widget.value, function (value) {
-        // callback function to handle changes in the textbox
-        // this can be left empty if you don't need to handle changes
-        console.log(`New value: ${value}`);
-    }, widget.size);
-}
+    async fetchWidgetDefsFromBackend() {
+        // Fetch the widget definitions from the server
+        const response = await fetch("/widgetdefs");
+        const widgetDefs = await response.json();
 
-app.registerExtension({
-    name: "Comfy.ETK.nodes.EvalWidget",
-    async beforeRegisterNodeDef(nodeType, nodeData, app) {
-        // check if this has exec in its name
+        // Return the fetched widget definitions
+        return widgetDefs;
+    }
 
-        if (nodeData.name == "Eval Widget") {
+    async registerCustomWidgetNodesFromServer() {
+        const widgetDefs = await this.fetchWidgetDefsFromBackend();
+        this.registerCustomWidgetNodes(widgetDefs);
+    }
 
-            // // when the original node is defined, we can add our textbox
-            // // replace the widget at input.required.text_to_eval with our own
-            // const codeWidget = nodeData.input.required.text_to_eval;
-            //
-            // if (codeWidget) {
-            //     // replace the CODE widget with our own
-            //     //nodeData.input[codeWidget[0]] = ["MyTextBox"];
-            //     // make sure its gone visually
-            //     // this should be of type STRING
-            //     nodeData.input.required.text_to_eval =
-            //         ["STRING", node.addWidget(widget.type, widget.name, widget.value, function (value) {
-            //         // callback function to handle changes in the textbox
-            //         // this can be left empty if you don't need to handle changes
-            //         console.log(`New value: ${value}`);
-            //     }, widget.size)];
-            //
-            //
-            // }
+    registerCustomWidgetNodes(widgetDefs) {
+        for (const widgetDef of widgetDefs) {
+            const {widgetId, name, type, properties, render} = widgetDef;
 
-            const onNodeCreated = nodeType.prototype.onNodeCreated;
-            nodeType.prototype.onNodeCreated = function () {
-                const r = onNodeCreated ? onNodeCreated.apply(this, arguments) : undefined;
+            const widgetNode = function () {
+                const WidgetClass = ComfyWidgets[type]; // Get the widget constructor function
+                const widget = new WidgetClass(properties);
+                const renderElement = document.createElement("div");
+                renderElement.innerHTML = render;
+                this.addWidget(widget, renderElement);
 
-                // call our function to add the textbox
-                addTextBox(this);
-
-                return r;
+                app.invokeExtensionsAsync("widgetCreated", widget);
             };
+
+
+            widgetNode.title = name;
+            widgetNode.category = "Custom Widgets";
+
+            LiteGraph.registerNodeType(widgetId, widgetNode);
         }
     }
-});
+}
+
+// Create an instance of the WidgetDefinitionExtension class
+const widgetDefinitionExtension = new WidgetDefinitionExtension();
+
+// Register the extension and load widget definitions from the server
+//app.registerExtension(widgetDefinitionExtension);
+//widgetDefinitionExtension.registerCustomWidgetNodesFromServer();
+
+// Append the ComfyWidgets object with server-defined widgets
+async function appendServerWidgets() {
+    const widgetDefs = await widgetDefinitionExtension.fetchWidgetDefsFromBackend();
+
+    for (const widgetDef of widgetDefs) {
+        const {widgetId, name, type, properties, render} = widgetDef;
+
+        // # example
+        // INT(node, inputName, inputData) {
+        //    const {val, config} = getNumberDefaults(inputData, 1);
+        //    Object.assign(config, {precision: 0});
+        //    return {
+        //        widget: node.addWidget(
+        //            "number",
+        //            inputName,
+        //            val,
+        //            function (v) {
+        //                const s = this.options.step / 10;
+        //                this.value = Math.round(v / s) * s;
+        //            },
+        //           config
+        //        ),
+        //    };
+        //}
+
+        // create a const that is the exact return statement from the example above
+        const widgetGenerator = {
+            BAH(node, inputName, inputData) {
+                const val = 1;
+                const config = 2;
+                //Object.assign(config, {precision: 0});
+                return {
+                    widget: node.addWidget(
+                        "number",
+                        inputName,
+                        val,
+                        function (v) {
+                            this.value = 1;
+                        },
+                        config
+                    ),
+
+                };
+            },
+
+            // Add the widget class to the ComfyWidgets array
+        }
+        ComfyWidgets[type] = widgetGenerator;
+
+        // Register the node type using the widgetId
+        const baseClass = eval(widgetDef);
+        LiteGraph.registerNodeType(widgetId, baseClass);
+    }
+
+}
+
+// Call the function to append server-defined widgets
+//appendServerWidgets();
+
+

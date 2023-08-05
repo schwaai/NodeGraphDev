@@ -101,6 +101,12 @@ class ComfyApi extends EventTarget {
 						const imageBlob = new Blob([buffer.slice(4)], { type: imageMime });
 						this.dispatchEvent(new CustomEvent("b_preview", { detail: imageBlob }));
 						break;
+					case "execution_start":
+						this.dispatchEvent(new CustomEvent("execution_start", { detail: msg.data }));
+						break;
+					case "execution_error":
+						this.dispatchEvent(new CustomEvent("execution_error", { detail: msg.data }));
+						break;
 					default:
 						throw new Error(`Unknown binary websocket message of type ${eventType}`);
 					}

@@ -392,7 +392,10 @@ class PromptServer():
             info['display_name'] = nodes.NODE_DISPLAY_NAME_MAPPINGS[
                 node_class] if node_class in nodes.NODE_DISPLAY_NAME_MAPPINGS.keys() else node_class
             info['description'] = ''
-            info['category'] = 'sd'
+            info['category'] = 'sd'if hasattr(obj_class, 'OUTPUT_NODE') and obj_class.OUTPUT_NODE == True:
+                info['output_node'] = True
+            else:
+                info['output_node'] = False
             info['internal_state'] = obj_class.INTERNAL_STATE if hasattr(obj_class, 'INTERNAL_STATE') else ''
             info['internal_state_display'] = obj_class.INTERNAL_STATE_DISPLAY if hasattr(obj_class,
                                                                                          'INTERNAL_STATE_DISPLAY') else ''
